@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { visibleItems, deadlineState, safeUrl, escapeHtml, validateContent } from '../domain.js'
 import { createPublisher } from '../github.js'
+import { convertExport } from '../scripts/import-cloud-export.js'
 
 const homework = { id: 'hw', title: '数学分析练习', description: '第三章', subject: '数学分析III', deadline: '2999-01-01', targetClasses: ['class_1'], attachments: [], status: 'published' }
 const data = { schemaVersion: 1, homeworks: [homework], notices: [], materials: [] }
@@ -31,6 +32,14 @@ test('内容文件必须有合法班级、唯一标识和安全附件', () => {
   assert.throws(() => validateContent({ ...data, homeworks: [homework, homework] }), /重复/)
   assert.throws(() => validateContent({ ...data, homeworks: [{ ...homework, targetClasses: ['invalid'] }] }), /班级/)
   assert.throws(() => validateContent({ ...data, homeworks: [{ ...homework, attachments: [{ name: 'a', url: 'javascript:x' }] }] }), /附件/)
+})
+test('旧云数据只迁移业务字段，未转换的云附件阻止发布', () => {
+  const input = { homeworks: [{ ...homework, _id: 'old', createdBy: { password: 'test-private' }, token: 'test-private', attachments: [{ fileID: 'cloud://old/a', name: 'a.pdf' }] }], notices: [], materials: [] }
+  assert.throws(() => convertExport(input), /尚未迁移/)
+  const output = convertExport(input, { 'cloud://old/a': 'files/a.pdf' })
+  assert.equal(output.homeworks[0].id, 'homeworks-old')
+  assert.equal(output.homeworks[0].attachments[0].url, 'files/a.pdf')
+  assert.equal(JSON.stringify(output).includes('test-private'), false)
 })
 test('发布正文和附件使用同一 commit 且不强制覆盖并发更新', async () => {
   const calls = []
