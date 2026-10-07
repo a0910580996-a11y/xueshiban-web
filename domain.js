@@ -1,5 +1,10 @@
 import { CURRENT_COURSES, normalizeCourse } from './courses.js?v=20261007-4'
 export const CLASSES = [['all', '全体'], ['class_1', '1班'], ['class_2', '2班'], ['class_3', '3班'], ['class_4', '4班']]
+export const SUBMISSION_PLATFORMS = {
+  none: { label: '无需在线跳转', url: '' },
+  chaoxing: { label: '学习通', url: 'https://i.chaoxing.com/' },
+  ketangpai: { label: '课堂派', url: 'https://www.ketangpai.com/' }
+}
 export const CATEGORIES = {
   notices: { course: '课程通知', exam: '考试通知' },
   materials: { textbook: '课程资料', review: '复习资料', paper: '练习试卷', homeworkSolution: '作业解析', other: '其他' }
@@ -61,6 +66,7 @@ export function validateContent(data) {
       if (!['published', 'draft', 'withdrawn'].includes(item.status)) throw new Error('内容状态无效。')
       if (!Array.isArray(item.targetClasses) || !item.targetClasses.length || item.targetClasses.some(c => !CLASSES.some(([id]) => id === c))) throw new Error('请选择有效班级。')
       if (kind === 'homeworks' && (!item.subject || !/^\d{4}-\d{2}-\d{2}$/.test(item.deadline || '') || Number.isNaN(Date.parse(item.deadline)))) throw new Error('作业需要课程和有效截止日期。')
+      if (kind === 'homeworks' && item.submissionPlatform !== undefined && (typeof item.submissionPlatform !== 'string' || !Object.hasOwn(SUBMISSION_PLATFORMS, item.submissionPlatform))) throw new Error('提交平台无效。')
       if (kind !== 'homeworks' && !CATEGORIES[kind][item.category]) throw new Error('分类无效。')
       if (!Array.isArray(item.attachments) || item.attachments.length > 3 || item.attachments.some(a => !safeUrl(a.url) || !a.name || (a.size !== undefined && (!Number.isFinite(a.size) || a.size < 0)))) throw new Error('附件必须使用有效的 HTTPS 链接或站内文件，最多三个，大小必须有效。')
     }

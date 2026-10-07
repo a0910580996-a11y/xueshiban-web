@@ -1,6 +1,6 @@
-import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, validateContent } from './domain.js?v=20261007-4'
+import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, validateContent } from './domain.js?v=20261007-5'
 import { createPublisher } from './github.js?v=20261007-4'
-import { studentView, materialCard } from './student-view.js?v=20261007-4'
+import { studentView, materialCard, submissionLink, submissionSelect } from './student-view.js?v=20261007-5'
 import { courseOptions, normalizeCourse, formatSize } from './courses.js?v=20261007-4'
 import { REPOSITORY } from './config.js'
 
@@ -58,7 +58,7 @@ function card(item, kind) {
   const deadline = deadlineState(item.deadline)
   const completed = state.done.includes(item.id)
   const meta = kind === 'homeworks' ? normalizeCourse(item.subject) : CATEGORIES[kind][item.category]
-  return `<article class="entry ${kind === 'homeworks' && completed ? 'done' : ''}"><button class="entry-body" data-open="${e(item.id)}"><div class="entry-meta"><span class="category">${e(meta)}</span><span>${e(kind === 'homeworks' ? item.deadline : (item.updatedAt || '').slice(0, 10))}</span></div><h2>${e(item.title)}</h2><p>${e(item.description || item.content || '打开查看详细内容')}</p></button><div class="entry-foot"><span class="${kind === 'homeworks' && deadline.days !== null && deadline.days >= 0 && deadline.days <= 1 ? 'urgent' : ''}">${kind === 'homeworks' ? e(deadline.label) : kind === 'notices' ? (state.read.includes(item.id) ? '已读' : '未读') : `附件 ${item.attachments.length} 个`}</span>${kind === 'homeworks' ? `<button data-done="${e(item.id)}" aria-pressed="${completed}">${completed ? '✓ 已完成' : '标记完成'}</button>` : `<button data-open="${e(item.id)}">查看${kinds[kind]} →</button>`}</div></article>`
+  return `<article class="entry ${kind === 'homeworks' && completed ? 'done' : ''}"><button class="entry-body" data-open="${e(item.id)}"><div class="entry-meta"><span class="category">${e(meta)}</span><span>${e(kind === 'homeworks' ? item.deadline : (item.updatedAt || '').slice(0, 10))}</span></div><h2>${e(item.title)}</h2><p>${e(item.description || item.content || '打开查看详细内容')}</p></button><div class="entry-foot"><span class="${kind === 'homeworks' && deadline.days !== null && deadline.days >= 0 && deadline.days <= 1 ? 'urgent' : ''}">${kind === 'homeworks' ? e(deadline.label) : kind === 'notices' ? (state.read.includes(item.id) ? '已读' : '未读') : `附件 ${item.attachments.length} 个`}</span>${kind === 'homeworks' ? `<div class="entry-actions">${submissionLink(item.submissionPlatform)}<button data-done="${e(item.id)}" aria-pressed="${completed}">${completed ? '✓ 已完成' : '标记完成'}</button></div>` : `<button data-open="${e(item.id)}">查看${kinds[kind]} →</button>`}</div></article>`
 }
 function toggleDone(id) {
   state.done = state.done.includes(id) ? state.done.filter(v => v !== id) : [...state.done, id]
@@ -69,7 +69,7 @@ function openDetail(id, kind, updateHash = true) {
   if (!item) { toast('该内容不存在或已撤回。'); return }
   if (kind === 'notices' && !state.read.includes(id)) { state.read.push(id); storage.write('read', state.read) }
   const files = item.attachments.map(a => { const url = safeUrl(a.url); if (!url) return ''; return `<div class="attachment"><a class="file" href="${e(url)}" target="_blank" rel="noopener noreferrer">${e(a.name)} ↗<small>${e(formatSize(a.size))} · ${/\.pdf$/i.test(a.name) ? '浏览器查看' : '打开或下载'}</small></a>${url.startsWith('files/') ? `<a class="download-link" href="${e(url)}" download="${e(a.name)}">下载文件 ↓</a>` : ''}</div>${/\.(png|jpe?g|webp)$/i.test(a.name) ? `<img class="detail-image" src="${e(url)}" alt="${e(a.name)}" loading="lazy">` : ''}` }).join('')
-  document.querySelector('#detail-content').innerHTML = `<p class="inline-meta">${e(kind === 'homeworks' ? `${item.subject} · ${item.deadline} 截止` : CATEGORIES[kind][item.category])} · ${e(item.targetClasses.map(c => CLASSES.find(([id]) => id === c)?.[1]).join('、'))}</p><h2>${e(item.title)}</h2><div class="content">${e(item.description || item.content || '')}</div><div class="files">${files}</div><div class="form-actions">${kind === 'homeworks' ? `<button class="primary" id="detail-done">${state.done.includes(id) ? '取消完成标记' : '标记完成'}</button>` : ''}<button class="secondary" id="share">复制分享链接</button></div>`
+  document.querySelector('#detail-content').innerHTML = `<p class="inline-meta">${e(kind === 'homeworks' ? `${item.subject} · ${item.deadline} 截止` : CATEGORIES[kind][item.category])} · ${e(item.targetClasses.map(c => CLASSES.find(([id]) => id === c)?.[1]).join('、'))}</p><h2>${e(item.title)}</h2><div class="content">${e(item.description || item.content || '')}</div><div class="files">${files}</div><div class="form-actions">${kind === 'homeworks' ? `${submissionLink(item.submissionPlatform, true)}<button class="secondary" id="detail-done">${state.done.includes(id) ? '取消完成标记' : '标记完成'}</button>` : ''}<button class="secondary" id="share">复制分享链接</button></div>`
   document.querySelector('#share').onclick = async () => { try { await navigator.clipboard.writeText(new URL(`#${kind}/${encodeURIComponent(id)}`, location.href).href); toast('分享链接已复制。') } catch { toast('请从浏览器地址栏复制当前链接。') } }
   const done = document.querySelector('#detail-done'); if (done) done.onclick = () => { toggleDone(id); done.textContent = state.done.includes(id) ? '取消完成标记' : '标记完成' }
   if (updateHash) history.replaceState(null, '', '#' + kind + '/' + encodeURIComponent(id))
@@ -105,6 +105,7 @@ function editor(kind, item = {}) {
   if (kind === 'materials') {
     document.querySelector('label[for="category"]').insertAdjacentHTML('beforebegin', `<label for="subject">所属课程</label><select id="subject" name="subject"><option value="">未分类课程</option>${courseOptions([item]).map(subject => `<option value="${e(subject)}" ${normalizeCourse(item.subject) === subject ? 'selected' : ''}>${e(subject)}</option>`).join('')}</select>`)
   } else if (kind === 'homeworks') {
+    document.querySelector('#deadline').insertAdjacentHTML('afterend', submissionSelect(item.submissionPlatform))
     document.querySelector('#subject').setAttribute('list', 'course-options')
     document.querySelector('#subject').insertAdjacentHTML('afterend', `<datalist id="course-options">${courseOptions([item]).map(subject => `<option value="${e(subject)}"></option>`).join('')}</datalist>`)
   }
@@ -118,7 +119,7 @@ function editor(kind, item = {}) {
     const attachments = Array.from(document.querySelector('#attachments').files)
     if (attachments.length > 3 || attachments.some(f => f.size > 20 * 1024 * 1024 || !/\.(pdf|docx?|pptx?|md|png|jpe?g|webp)$/i.test(f.name))) { toast('附件格式或大小不符合要求。'); return }
     const record = { ...item, id: item.id || crypto.randomUUID(), title: values.get('title').trim(), description: values.get('description').trim(), targetClasses: selected.includes('all') ? ['all'] : selected, status, updatedAt: new Date().toISOString(), attachments: item.attachments || [] }
-    if (kind === 'homeworks') { record.subject = normalizeCourse(values.get('subject')); record.deadline = values.get('deadline') } else { record.category = values.get('category'); if (kind === 'materials') record.subject = values.get('subject') }
+    if (kind === 'homeworks') { record.subject = normalizeCourse(values.get('subject')); record.deadline = values.get('deadline'); record.submissionPlatform = values.get('submissionPlatform') } else { record.category = values.get('category'); if (kind === 'materials') record.subject = values.get('subject') }
     try {
       // Read each upload only into memory; never persist credentials or private drafts in storage.
       const uploads = []
