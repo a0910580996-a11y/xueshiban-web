@@ -1,3 +1,4 @@
+import { CURRENT_COURSES, normalizeCourse } from './courses.js?v=20261007-4'
 export const CLASSES = [['all', '全体'], ['class_1', '1班'], ['class_2', '2班'], ['class_3', '3班'], ['class_4', '4班']]
 export const CATEGORIES = {
   notices: { course: '课程通知', exam: '考试通知' },
@@ -20,20 +21,28 @@ export function deadlineState(deadline, now = new Date()) {
   const days = Math.round((new Date(deadline + 'T00:00:00+08:00') - today) / 86400000)
   return { days, expired: days < 0, label: days < 0 ? '已截止' : days === 0 ? '今天截止' : days === 1 ? '明天截止' : `还剩 ${days} 天` }
 }
-export function visibleItems(data, kind, { classId = 'all', query = '', filter = 'all', done = [], subject = 'all', sort = 'deadline-asc' } = {}) {
+export function visibleItems(data, kind, { classId = 'all', query = '', filter = 'all', done = [], subject = 'all', sort = 'deadline-asc', format = 'all' } = {}) {
   return data[kind].filter(item => {
     if (item.status !== 'published') return false
     if (classId !== 'all' && !item.targetClasses.includes('all') && !item.targetClasses.includes(classId)) return false
-    if (query && !`${item.title} ${item.description || item.content || ''} ${item.subject || ''}`.toLowerCase().includes(query.toLowerCase())) return false
+    if (query && !`${item.title} ${item.description || item.content || ''} ${normalizeCourse(item.subject)} ${item.attachments.map(a => a.name).join(' ')}`.toLowerCase().includes(normalizeCourse(query.trim()).toLowerCase())) return false
+    if (subject !== 'all' && normalizeCourse(item.subject) !== normalizeCourse(subject)) return false
+    if (format !== 'all' && !item.attachments.some(a => a.name.toLowerCase().endsWith('.' + format))) return false
     if (kind === 'homeworks') {
-      if (subject !== 'all' && item.subject !== subject) return false
       if (filter === 'pending') return !done.includes(item.id) && !deadlineState(item.deadline).expired
       if (filter === 'done') return done.includes(item.id)
       if (filter === 'expired') return deadlineState(item.deadline).expired
     } else if (filter !== 'all' && item.category !== filter) return false
     return true
   }).sort((a, b) => {
-    if (kind !== 'homeworks') return (b.updatedAt || '').localeCompare(a.updatedAt || '')
+    if (kind !== 'homeworks') {
+      if (kind === 'materials' && sort !== 'title') {
+        const rank = item => { const index = CURRENT_COURSES.indexOf(normalizeCourse(item.subject)); return index === -1 ? CURRENT_COURSES.length : index }
+        const courseOrder = rank(a) - rank(b)
+        if (courseOrder) return courseOrder
+      }
+      return sort === 'title' ? a.title.localeCompare(b.title, 'zh-CN') : (b.updatedAt || '').localeCompare(a.updatedAt || '') || a.title.localeCompare(b.title, 'zh-CN')
+    }
     if (sort === 'subject') return a.subject.localeCompare(b.subject, 'zh-CN') || (a.deadline || '9999').localeCompare(b.deadline || '9999')
     const order = (a.deadline || '9999').localeCompare(b.deadline || '9999')
     return sort === 'deadline-desc' ? -order : order
@@ -47,12 +56,13 @@ export function validateContent(data) {
     for (const item of data[kind]) {
       if (!item || typeof item.id !== 'string' || !item.id || seen.has(item.id)) throw new Error('内容标识缺失或重复。')
       seen.add(item.id)
+      if (item.subject !== undefined && (typeof item.subject !== 'string' || item.subject.length > 100)) throw new Error('课程名称无效。')
       if (typeof item.title !== 'string' || !item.title.trim() || item.title.length > 120) throw new Error('标题必须在 1–120 字之间。')
       if (!['published', 'draft', 'withdrawn'].includes(item.status)) throw new Error('内容状态无效。')
       if (!Array.isArray(item.targetClasses) || !item.targetClasses.length || item.targetClasses.some(c => !CLASSES.some(([id]) => id === c))) throw new Error('请选择有效班级。')
       if (kind === 'homeworks' && (!item.subject || !/^\d{4}-\d{2}-\d{2}$/.test(item.deadline || '') || Number.isNaN(Date.parse(item.deadline)))) throw new Error('作业需要课程和有效截止日期。')
       if (kind !== 'homeworks' && !CATEGORIES[kind][item.category]) throw new Error('分类无效。')
-      if (!Array.isArray(item.attachments) || item.attachments.length > 3 || item.attachments.some(a => !safeUrl(a.url) || !a.name)) throw new Error('附件必须使用有效的 HTTPS 链接或站内文件，最多三个。')
+      if (!Array.isArray(item.attachments) || item.attachments.length > 3 || item.attachments.some(a => !safeUrl(a.url) || !a.name || (a.size !== undefined && (!Number.isFinite(a.size) || a.size < 0)))) throw new Error('附件必须使用有效的 HTTPS 链接或站内文件，最多三个，大小必须有效。')
     }
   }
   return data

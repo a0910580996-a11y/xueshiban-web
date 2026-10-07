@@ -1,7 +1,780 @@
 {
   "schemaVersion": 1,
-  "updatedAt": null,
+  "updatedAt": "2026-10-07T03:49:47.328Z",
   "homeworks": [],
   "notices": [],
-  "materials": []
+  "materials": [
+    {
+      "id": "material-e5e8586d7117fbd1",
+      "title": "22级常微分方程期末复习（二）",
+      "subject": "常微分方程",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "22级常微分方程期末复习（二）.pdf",
+          "url": "files/e5e8586d7117fbd1f109bd0c3554b5214b4698f7ab99c27efcf19dc6fa4fd3ea.pdf",
+          "size": 828944
+        }
+      ]
+    },
+    {
+      "id": "material-61cabb4cc4da6873",
+      "title": "22级常微分方程期末复习（三）",
+      "subject": "常微分方程",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "22级常微分方程期末复习（三）.pdf",
+          "url": "files/61cabb4cc4da6873ee7d3f913074ca301f8f18b2f75117c51a813f4c0fcac7e3.pdf",
+          "size": 1069167
+        }
+      ]
+    },
+    {
+      "id": "material-716d8178013893ef",
+      "title": "22级常微分方程期末复习（一）",
+      "subject": "常微分方程",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "22级常微分方程期末复习（一）.pdf",
+          "url": "files/716d8178013893efaeda83f2a7461ad43e5c03e07f4f820ecc0d52760a499ed6.pdf",
+          "size": 1402631
+        }
+      ]
+    },
+    {
+      "id": "material-93d3986346419b7a",
+      "title": "常微分方程练习题A参考",
+      "subject": "常微分方程",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "常微分方程练习题A参考-高等代数1+常微分方程+概率论+近代史+数学分析3.pdf",
+          "url": "files/93d3986346419b7a786ec30e89de86c7b6362731293bed32afb52c13703f522c.pdf",
+          "size": 165339
+        }
+      ]
+    },
+    {
+      "id": "material-623c68f14de23872",
+      "title": "常微分方程练习题B参考",
+      "subject": "常微分方程",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "常微分方程练习题B参考-高等代数1+常微分方程+概率论+近代史+数学分析3.pdf",
+          "url": "files/623c68f14de238729a3e550a94a4e6c162b5800d386d934fa7b638ead297c5d6.pdf",
+          "size": 169746
+        }
+      ]
+    },
+    {
+      "id": "material-14c5143c3a8620fc",
+      "title": "复习22级常微分方程期末复习（二）",
+      "subject": "常微分方程",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "复习22级常微分方程期末复习（二）.pdf",
+          "url": "files/14c5143c3a8620fcdf0b9a19d96f430c0d43e896e449e0e85a6be0615892319f.pdf",
+          "size": 968137
+        }
+      ]
+    },
+    {
+      "id": "material-30bdb2487ae19b1b",
+      "title": "复习22级常微分方程期末复习（三）",
+      "subject": "常微分方程",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "复习22级常微分方程期末复习（三）.pdf",
+          "url": "files/30bdb2487ae19b1bf00472e33b46034456064d39710a71fb7bdf1c5f94819cdd.pdf",
+          "size": 1264576
+        }
+      ]
+    },
+    {
+      "id": "material-0f3b896bd62647c5",
+      "title": "复习22级常微分方程期末复习（一）",
+      "subject": "常微分方程",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "复习22级常微分方程期末复习（一）.pdf",
+          "url": "files/0f3b896bd62647c5c04ab3eeca59b612c00b437d36d89c736ea92b22ee5a4bbb.pdf",
+          "size": 1586173
+        }
+      ]
+    },
+    {
+      "id": "material-1b0d1055f7c55b33",
+      "title": "发展与教育心理学简答题",
+      "subject": "发展与教育心理学",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "发展与教育心理学简答题.docx",
+          "url": "files/1b0d1055f7c55b337c24557fbbf39e9155d717d23b350c2e4ec5a8e9b51a654d.docx",
+          "size": 33217
+        }
+      ]
+    },
+    {
+      "id": "material-0720b19530cc2752",
+      "title": "1-7章复习要点",
+      "subject": "概率论与数理统计",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "1-7章复习要点.pdf",
+          "url": "files/0720b19530cc27524cafaea40555dd9459e260997659e026d6af00996d36c48d.pdf",
+          "size": 986667
+        }
+      ]
+    },
+    {
+      "id": "material-9f5ae0e6c274ef98",
+      "title": "复习概率论",
+      "subject": "概率论与数理统计",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "复习概率论.pdf",
+          "url": "files/9f5ae0e6c274ef98529d04402ed2750b4685b91448be2e5c769398f810e009d3.pdf",
+          "size": 949531
+        }
+      ]
+    },
+    {
+      "id": "material-baa76d439607d51c",
+      "title": "概率论1-7章复习要点",
+      "subject": "概率论与数理统计",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "概率论1-7章复习要点.pdf",
+          "url": "files/baa76d439607d51c29e8b15e63290881b76dc750247c7d61b23387f16fbf35a5.pdf",
+          "size": 637234
+        }
+      ]
+    },
+    {
+      "id": "material-591777efe4fe92d0",
+      "title": "概率论复习2020",
+      "subject": "概率论与数理统计",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "year": "2020",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "概率论复习2020.pdf",
+          "url": "files/591777efe4fe92d0df9cb29ce1799b77e9b8fda358480e4bcbdfc63c14250c7b.pdf",
+          "size": 2560536
+        }
+      ]
+    },
+    {
+      "id": "material-737d1782eecb3742",
+      "title": "概率论与数理统计试题库及答案",
+      "subject": "概率论与数理统计",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "概率论与数理统计试题库及答案.pdf",
+          "url": "files/737d1782eecb3742986de9979855f01d7f5920000c209bd413d24380d1073a85.pdf",
+          "size": 448937
+        }
+      ]
+    },
+    {
+      "id": "material-23f7592dd4dbb920",
+      "title": "概率论与数理统计试题库及答案(考试必做)",
+      "subject": "概率论与数理统计",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "概率论与数理统计试题库及答案(考试必做).pdf",
+          "url": "files/23f7592dd4dbb9200425c34d86f3aa1c359b0b41e11104de9df02d858af0a167.pdf",
+          "size": 448577
+        }
+      ]
+    },
+    {
+      "id": "material-e3c8f8026197e8bf",
+      "title": "期末练习",
+      "subject": "概率论与数理统计",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "期末练习.pdf",
+          "url": "files/e3c8f8026197e8bf1bc8111c65981797d8ba902f0bba8da57d12311774e17ae1.pdf",
+          "size": 1136886
+        }
+      ]
+    },
+    {
+      "id": "material-f7710b5b8b0900dc",
+      "title": "数学2005概率统计中段考试答案",
+      "subject": "概率论与数理统计",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "year": "2005",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "数学2005概率统计中段考试答案.pdf",
+          "url": "files/f7710b5b8b0900dcbfb8bc436e7ed97dc9db7489cc872f5e2c9ec1174e236362.pdf",
+          "size": 116955
+        }
+      ]
+    },
+    {
+      "id": "material-a506e0e890afa2d2",
+      "title": "中段考试题参考答案",
+      "subject": "概率论与数理统计",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "中段考试题参考答案.pdf",
+          "url": "files/a506e0e890afa2d2d48fc0a238a17acf3c0433c7afde92371bf5454681e7f9e1.pdf",
+          "size": 121690
+        }
+      ]
+    },
+    {
+      "id": "material-f80a211a28a7ff8e",
+      "title": "近世代数(2017--2018)期末（有答案）",
+      "subject": "近世代数",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "year": "2017",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "近世代数(2017--2018)期末（有答案）.pdf",
+          "url": "files/f80a211a28a7ff8e862f8a7907fa5d296c11ad8da79fa23caffa3c4cb66edbd7.pdf",
+          "size": 378837
+        }
+      ]
+    },
+    {
+      "id": "material-0b7d3a3dd9c1c7ce",
+      "title": "近世代数（2020--2021）期末",
+      "subject": "近世代数",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "year": "2020",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "近世代数（2020--2021）期末.pdf",
+          "url": "files/0b7d3a3dd9c1c7ce2058781612c16b8b9cf798856128bbaa3cd3bcf1ce64403d.pdf",
+          "size": 2479736
+        }
+      ]
+    },
+    {
+      "id": "material-90cdaa95899fd153",
+      "title": "习题  一",
+      "subject": "近世代数",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "习题  一.pdf",
+          "url": "files/90cdaa95899fd15382f48d306d8e5746d0256847b1aa71d7f684a2b174ea5aa0.pdf",
+          "size": 340969
+        }
+      ]
+    },
+    {
+      "id": "material-3f528d942de7aa34",
+      "title": "（练习题——附录参考答案版）《概论》（2018年修订版）",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "year": "2018",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "（练习题——附录参考答案版）《概论》（2018年修订版）(1).pdf",
+          "url": "files/3f528d942de7aa34bda21bb6f9c62f8c4fdd0b64f6645da63feaacd054425f5e.pdf",
+          "size": 279012
+        }
+      ]
+    },
+    {
+      "id": "material-86a768d3fabcfac0",
+      "title": "毛概大题",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "毛概大题 (2).pdf",
+          "url": "files/86a768d3fabcfac039d40f09750e4cc685ef0b39f391418cf6ef6707d8a746e6.pdf",
+          "size": 170719
+        }
+      ]
+    },
+    {
+      "id": "material-965b39c0e3f4e69c",
+      "title": "毛概大题（修正版）",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "毛概大题（修正版）-教育学原理+发展教育心理学+毛概.docx",
+          "url": "files/965b39c0e3f4e69cb634a25df2ad55cf6ee7071813bbbd0dbb66d566549b0ef3.docx",
+          "size": 34436
+        }
+      ]
+    },
+    {
+      "id": "material-f1a9c66c14f1517a",
+      "title": "毛概大题3",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "毛概大题3.docx",
+          "url": "files/f1a9c66c14f1517a496a5f6e06cdd0f046776f532402ccdde581314629dc9ca5.docx",
+          "size": 28723
+        }
+      ]
+    },
+    {
+      "id": "material-d47c2580b3037738",
+      "title": "毛概单项选择题",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "1_1_毛概单项选择题.docx",
+          "url": "files/d47c2580b30377389ff187dbc44d7f1244b08af1a3805f6b9f66e9f37eca8c86.docx",
+          "size": 54003
+        }
+      ]
+    },
+    {
+      "id": "material-9e37d4176f2dc36d",
+      "title": "毛概复习资料（选择+辨析）6.15",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "毛概复习资料（选择+辨析）6.15-数学建模+常微分+毛概发展心理学+习概.docx",
+          "url": "files/9e37d4176f2dc36d7f1765470bcc080cdefaeacff2473377171ebb93cb9423ed.docx",
+          "size": 66864
+        }
+      ]
+    },
+    {
+      "id": "material-0f99426992cfb8b8",
+      "title": "毛概考点复习大纲",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "毛概考点复习大纲.pdf",
+          "url": "files/0f99426992cfb8b87674fb503d8dd9c36d818cb56e83bb409c0dab62e5533133.pdf",
+          "size": 163010
+        }
+      ]
+    },
+    {
+      "id": "material-b09ea537c1b16635",
+      "title": "毛概论述题",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "textbook",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "毛概论述题.docx",
+          "url": "files/b09ea537c1b16635437a15802c50f73c72825123fa79b35a4d2350e1831f1c63.docx",
+          "size": 20387
+        }
+      ]
+    },
+    {
+      "id": "material-1269c89f89cb6790",
+      "title": "毛概题库",
+      "subject": "毛泽东思想和中国特色社会主义理论体系概论",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "毛概题库.docx",
+          "url": "files/1269c89f89cb6790517d953ecd1111521931b9a56339208729c8afadca2457dc.docx",
+          "size": 59884
+        }
+      ]
+    },
+    {
+      "id": "material-96a47b3b39b1a71f",
+      "title": "数学分析III复习PPT",
+      "subject": "数学分析三",
+      "category": "review",
+      "description": "同名资料的不同版本或格式，均保留供选择。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "数学分析III复习PPT(1)(1).pdf",
+          "url": "files/96a47b3b39b1a71f975e4b4ca458f947703afa706089e535b486b4c0d9422aa5.pdf",
+          "size": 1062730
+        },
+        {
+          "name": "数学分析III复习PPT(2).pdf",
+          "url": "files/ebfc7e8e4e8f01599b1c0e141161072fbfcf4e39e5b3fa4e1efef6dae3c2f1a1.pdf",
+          "size": 1107346
+        },
+        {
+          "name": "数学分析III复习PPT(1).pdf",
+          "url": "files/f4687fe8c877be78558c2515b43967202e5e4a99ef83815cca4049940aae9be5.pdf",
+          "size": 622737
+        }
+      ]
+    },
+    {
+      "id": "material-05423cfd3038a53c",
+      "title": "第9章 统计模型0-区间估计与假设检验",
+      "subject": "数学建模",
+      "category": "textbook",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "第9章 统计模型0-区间估计与假设检验.pdf",
+          "url": "files/05423cfd3038a53ce43dcd1850d4393f22c5f9c7d9c27d58e62ca4dd0685abbe.pdf",
+          "size": 568698
+        }
+      ]
+    },
+    {
+      "id": "material-db272762446689ee",
+      "title": "习概 主观题",
+      "subject": "习近平新时代中国特色社会主义思想概论",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "习概 主观题(1).docx",
+          "url": "files/db272762446689ee8781210397c1744b0031aa6ed2e610bd65871d93cdba7eed.docx",
+          "size": 24835
+        }
+      ]
+    },
+    {
+      "id": "material-797b3396d281b159",
+      "title": "习概大题",
+      "subject": "习近平新时代中国特色社会主义思想概论",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "1.习概大题docx-.docx",
+          "url": "files/797b3396d281b159d5ce533cfe94570245ee16ad52eaf18dbd9084b74868f22b.docx",
+          "size": 20662
+        }
+      ]
+    },
+    {
+      "id": "material-ef95b77ae9138f35",
+      "title": "习近平新时代中国特色社会主义思想概论作业练习题",
+      "subject": "习近平新时代中国特色社会主义思想概论",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "习近平新时代中国特色社会主义思想概论作业练习题-毛概 习概 常微分方程 教育学原理.pdf",
+          "url": "files/ef95b77ae9138f35e92a47940a6515bd666462b77ddfd16d1aaab615a32f2518.pdf",
+          "size": 790432
+        }
+      ]
+    },
+    {
+      "id": "material-d3388503a077d085",
+      "title": "心理学复习资料",
+      "subject": "心理学",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "心理学复习资料.pdf",
+          "url": "files/d3388503a077d085d57a1bcad5141643a92b7c9a4f7fca97e7fcb3fef6571b3f.pdf",
+          "size": 247913
+        }
+      ]
+    },
+    {
+      "id": "material-b70c42f3ea568800",
+      "title": "《纲要》试题库（单选题 判断题）",
+      "subject": "中国近现代史纲要",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "《纲要》试题库（单选题 判断题）.docx",
+          "url": "files/b70c42f3ea56880052b432b2c2bdb5559baf464e2ecc25ab7036c5b0c49f235b.docx",
+          "size": 57737
+        }
+      ]
+    },
+    {
+      "id": "material-388fa737874c2a33",
+      "title": "《中国近现代史纲要》练习题",
+      "subject": "中国近现代史纲要",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "《中国近现代史纲要》练习题.docx",
+          "url": "files/388fa737874c2a335cfea5441148b67902c9cf8ff7b9f2ea598b18668da3b99f.docx",
+          "size": 49437
+        }
+      ]
+    },
+    {
+      "id": "material-c8a483754a44cefe",
+      "title": "2020-2021-1《中国近现代史纲要》（单项选择题、判断题）试题库及参考答案",
+      "subject": "中国近现代史纲要",
+      "category": "paper",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "year": "2020",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "2020-2021-1《中国近现代史纲要》（单项选择题、判断题）试题库及参考答案(1).pdf",
+          "url": "files/c8a483754a44cefe2fbf1912b2cefe3edefe182b691fe7655ccd98b0a55d3354.pdf",
+          "size": 265672
+        }
+      ]
+    },
+    {
+      "id": "material-6b2e5118ddeacd15",
+      "title": "近代史大题",
+      "subject": "中国近现代史纲要",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "近代史大题.docx",
+          "url": "files/6b2e5118ddeacd15b8ff09bd3990c315c89101cc728f74427f863ec519825232.docx",
+          "size": 28846
+        }
+      ]
+    },
+    {
+      "id": "material-f90ccaae97cbd989",
+      "title": "《Python语言程序设计》总复习",
+      "subject": "Python语言程序设计",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "《Python语言程序设计》总复习.pdf",
+          "url": "files/f90ccaae97cbd989ad6be9dbf0d347b8c3a76e6f663e372b0c457f95a38f97da.pdf",
+          "size": 157430
+        }
+      ]
+    },
+    {
+      "id": "material-725a49d0bed7a958",
+      "title": "python期中考试大题",
+      "subject": "Python语言程序设计",
+      "category": "review",
+      "description": "历史学习资料，仅供参考，不代表本学期考试范围。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "attachments": [
+        {
+          "name": "python期中考试大题.docx",
+          "url": "files/725a49d0bed7a9583769b3207223d6a9328936179e2bf361b59ffc0f3131db67.docx",
+          "size": 12765
+        }
+      ]
+    }
+  ]
 }

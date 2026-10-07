@@ -1,5 +1,7 @@
-import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, visibleItems, validateContent } from './domain.js?v=20261007-3'
-import { createPublisher } from './github.js?v=20261007-3'
+import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, validateContent } from './domain.js?v=20261007-4'
+import { createPublisher } from './github.js?v=20261007-4'
+import { studentView, materialCard } from './student-view.js?v=20261007-4'
+import { courseOptions, normalizeCourse, formatSize } from './courses.js?v=20261007-4'
 import { REPOSITORY } from './config.js'
 
 const app = document.querySelector('#app')
@@ -9,7 +11,7 @@ const storage = {
   read(key, fallback) { try { return JSON.parse(localStorage.getItem('xueshiban:' + key)) ?? fallback } catch { return fallback } },
   write(key, value) { try { localStorage.setItem('xueshiban:' + key, JSON.stringify(value)); return true } catch { toast('浏览器未允许保存，本次操作在关闭页面后可能丢失。'); return false } }
 }
-const state = { data: null, classId: storage.read('class', 'all'), done: storage.read('done', []), read: storage.read('read', []), filter: 'all', subject: 'all', sort: 'deadline-asc', query: '', error: '', publisher: null, snapshot: null, busy: false }
+const state = { data: null, classId: storage.read('class', 'all'), done: storage.read('done', []), read: storage.read('read', []), filter: 'all', subject: 'all', sort: 'deadline-asc', format: 'all', limit: 24, coursesOpen: false, query: '', error: '', publisher: null, snapshot: null, busy: false }
 if (!CLASSES.some(([id]) => id === state.classId)) state.classId = 'all'
 if (!Array.isArray(state.done)) state.done = []
 if (!Array.isArray(state.read)) state.read = []
@@ -24,31 +26,26 @@ function classPicker() { return `<select class="class-select" id="class-picker" 
 function render() {
   const kind = route()
   document.body.dataset.section = kinds[kind] ? kind : 'homeworks'
+  document.body.dataset.searching = Boolean(state.query)
   document.querySelectorAll('nav a').forEach(a => { const active = a.hash === '#' + kind; a.classList.toggle('active', active); if (active) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current') })
   app.setAttribute('aria-busy', 'false')
   if (kind === 'admin') return renderAdmin()
   if (!kinds[kind]) { location.hash = '#homeworks'; return }
   if (state.error) { app.innerHTML = `<div class="empty"><strong>暂时没能打开内容</strong><p>${e(state.error)}</p><button class="primary" id="retry">重新加载</button></div>`; document.querySelector('#retry').onclick = load; return }
   if (!state.data) return
-  const all = visibleItems(state.data, kind, { classId: state.classId, done: state.done })
-  const list = visibleItems(state.data, kind, state)
-  const options = kind === 'homeworks' ? { all: '全部作业', pending: '待完成', done: '已完成', expired: '已截止' } : { all: `全部${kinds[kind]}`, ...CATEGORIES[kind] }
-  const stats = kind === 'homeworks' ? `<div class="stats">${[
-    ['全部作业', all.length], ['待完成', all.filter(i => !state.done.includes(i.id) && !deadlineState(i.deadline).expired).length],
-    ['已完成', all.filter(i => state.done.includes(i.id)).length], ['紧急', all.filter(i => !state.done.includes(i.id) && deadlineState(i.deadline).days !== null && deadlineState(i.deadline).days >= 0 && deadlineState(i.deadline).days <= 1).length]
-  ].map(([label, value]) => `<div class="stat"><span>${label}</span><strong ${label === '紧急' ? 'class="urgent"' : ''}>${value}</strong><small>项</small></div>`).join('')}</div>` : ''
-  const subjects = [...new Set(all.map(item => item.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'))
-  const homeworkControls = kind === 'homeworks' ? `<div class="homework-controls"><label>课程<select id="subject-filter" aria-label="按课程筛选"><option value="all">全部课程</option>${subjects.map(subject => `<option value="${e(subject)}" ${state.subject === subject ? 'selected' : ''}>${e(subject)}</option>`).join('')}</select></label><label>排序<select id="sort-order" aria-label="作业排序">${[['deadline-asc', '截止日期 · 由近到远'], ['deadline-desc', '截止日期 · 由远到近'], ['subject', '课程名称 · 分组排列']].map(([id, label]) => `<option value="${id}" ${state.sort === id ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div>` : ''
-  const hasFilter = state.query || state.filter !== 'all' || (kind === 'homeworks' && state.subject !== 'all')
-  app.innerHTML = `<section class="hero"><div><h1>${kind === 'homeworks' ? '今日学事' : kind === 'notices' ? '班级通知' : '资料中心'}</h1><p>${kind === 'homeworks' ? '心中有数，学习有序。' : kind === 'notices' ? '重要的事情，及时知道。' : '课程讲义、复习材料与练习试卷。'}</p></div></section>${stats}<section class="control-panel" aria-label="筛选与搜索"><div class="scope-bar"><label for="class-picker">班级范围</label>${classPicker()}</div><div class="toolbar"><div class="filters" aria-label="内容筛选">${Object.entries(options).map(([id, label]) => `<button data-filter="${id}" class="${state.filter === id ? 'active' : ''}" aria-pressed="${state.filter === id}">${label}</button>`).join('')}</div><div class="search-wrap"><input class="search" id="search" type="search" placeholder="搜索${kinds[kind]}…" aria-label="搜索${kinds[kind]}" aria-keyshortcuts="Control+K Meta+K" value="${e(state.query)}"><kbd>Ctrl K</kbd></div></div>${homeworkControls}</section><section class="list" aria-label="${kinds[kind]}列表">${list.map(item => card(item, kind)).join('') || `<div class="empty"><strong>${hasFilter ? '没有找到匹配内容' : `当前没有${kinds[kind]}`}</strong><p>${hasFilter ? '试试其他关键词或筛选条件。' : '发布后，内容会出现在这里。'}</p></div>`}</section><p class="inline-meta">${kind === 'homeworks' ? '完成标记保存在当前设备，暂不跨设备同步。' : ''}${state.data.updatedAt ? ` 最近发布：${e(new Date(state.data.updatedAt).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))}` : ''}</p>`
-  document.querySelector('#class-picker').onchange = event => { state.classId = event.target.value; state.subject = 'all'; storage.write('class', state.classId); render() }
-  if (kind === 'homeworks') {
-    document.querySelector('#subject-filter').onchange = event => { state.subject = event.target.value; render() }
-    document.querySelector('#sort-order').onchange = event => { state.sort = event.target.value; render() }
-  }
-  document.querySelectorAll('[data-filter]').forEach(b => { b.onclick = () => { state.filter = b.dataset.filter; render() } })
+  app.innerHTML = studentView(state.data, state, kind, card, classPicker)
+  document.querySelector('#class-picker').onchange = event => { state.classId = event.target.value; state.limit = 24; storage.write('class', state.classId); render() }
+  const change = (selector, field) => { const element = document.querySelector(selector); if (element) element.onchange = event => { state[field] = event.target.value; state.limit = 24; render() } }
+  change('#subject-filter', 'subject'); change('#sort-order', 'sort'); change('#format-filter', 'format')
+  const reset = () => { state.subject = 'all'; state.filter = 'all'; state.query = ''; state.format = 'all'; state.limit = 24; state.classId = 'all'; storage.write('class', 'all'); render() }
+  document.querySelector('#reset-filters').onclick = reset
+  const emptyReset = document.querySelector('#empty-reset'); if (emptyReset) emptyReset.onclick = reset
+  const more = document.querySelector('#load-more'); if (more) more.onclick = () => { state.limit += 24; render() }
+  const browse = document.querySelector('#toggle-courses'); if (browse) browse.onclick = () => { state.coursesOpen = !state.coursesOpen; render() }
+  document.querySelectorAll('[data-course]').forEach(b => { b.onclick = () => { state.subject = b.dataset.course; state.filter = 'all'; state.query = ''; state.format = 'all'; state.limit = 24; render(); document.querySelector('.control-panel').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }) } })
+  document.querySelectorAll('[data-filter]').forEach(b => { b.onclick = () => { state.filter = b.dataset.filter; state.limit = 24; render() } })
   document.querySelector('#search').oninput = event => {
-    const pos = event.target.selectionStart; state.query = event.target.value; render()
+    const pos = event.target.selectionStart; state.query = event.target.value; state.limit = 24; render()
     const input = document.querySelector('#search'); input.focus(); if (input.type !== 'search') input.setSelectionRange(pos, pos)
   }
   document.querySelectorAll('[data-open]').forEach(b => { b.onclick = () => openDetail(b.dataset.open, kind) })
@@ -57,9 +54,10 @@ function render() {
   if (detailId && !dialog.open) openDetail(decodeURIComponent(detailId), kind, false)
 }
 function card(item, kind) {
+  if (kind === 'materials') return materialCard(item)
   const deadline = deadlineState(item.deadline)
   const completed = state.done.includes(item.id)
-  const meta = kind === 'homeworks' ? item.subject : CATEGORIES[kind][item.category]
+  const meta = kind === 'homeworks' ? normalizeCourse(item.subject) : CATEGORIES[kind][item.category]
   return `<article class="entry ${kind === 'homeworks' && completed ? 'done' : ''}"><button class="entry-body" data-open="${e(item.id)}"><div class="entry-meta"><span class="category">${e(meta)}</span><span>${e(kind === 'homeworks' ? item.deadline : (item.updatedAt || '').slice(0, 10))}</span></div><h2>${e(item.title)}</h2><p>${e(item.description || item.content || '打开查看详细内容')}</p></button><div class="entry-foot"><span class="${kind === 'homeworks' && deadline.days !== null && deadline.days >= 0 && deadline.days <= 1 ? 'urgent' : ''}">${kind === 'homeworks' ? e(deadline.label) : kind === 'notices' ? (state.read.includes(item.id) ? '已读' : '未读') : `附件 ${item.attachments.length} 个`}</span>${kind === 'homeworks' ? `<button data-done="${e(item.id)}" aria-pressed="${completed}">${completed ? '✓ 已完成' : '标记完成'}</button>` : `<button data-open="${e(item.id)}">查看${kinds[kind]} →</button>`}</div></article>`
 }
 function toggleDone(id) {
@@ -70,7 +68,7 @@ function openDetail(id, kind, updateHash = true) {
   const item = state.data[kind]?.find(i => i.id === id && i.status === 'published')
   if (!item) { toast('该内容不存在或已撤回。'); return }
   if (kind === 'notices' && !state.read.includes(id)) { state.read.push(id); storage.write('read', state.read) }
-  const files = item.attachments.map(a => { const url = safeUrl(a.url); if (!url) return ''; return `<a class="file" href="${e(url)}" target="_blank" rel="noopener noreferrer">${e(a.name)} ↗${a.size ? ` · ${(a.size / 1024).toFixed(0)} KB` : ''}</a>${/\.(png|jpe?g|webp)$/i.test(a.name) ? `<img class="detail-image" src="${e(url)}" alt="${e(a.name)}" loading="lazy">` : ''}` }).join('')
+  const files = item.attachments.map(a => { const url = safeUrl(a.url); if (!url) return ''; return `<div class="attachment"><a class="file" href="${e(url)}" target="_blank" rel="noopener noreferrer">${e(a.name)} ↗<small>${e(formatSize(a.size))} · ${/\.pdf$/i.test(a.name) ? '浏览器查看' : '打开或下载'}</small></a>${url.startsWith('files/') ? `<a class="download-link" href="${e(url)}" download="${e(a.name)}">下载文件 ↓</a>` : ''}</div>${/\.(png|jpe?g|webp)$/i.test(a.name) ? `<img class="detail-image" src="${e(url)}" alt="${e(a.name)}" loading="lazy">` : ''}` }).join('')
   document.querySelector('#detail-content').innerHTML = `<p class="inline-meta">${e(kind === 'homeworks' ? `${item.subject} · ${item.deadline} 截止` : CATEGORIES[kind][item.category])} · ${e(item.targetClasses.map(c => CLASSES.find(([id]) => id === c)?.[1]).join('、'))}</p><h2>${e(item.title)}</h2><div class="content">${e(item.description || item.content || '')}</div><div class="files">${files}</div><div class="form-actions">${kind === 'homeworks' ? `<button class="primary" id="detail-done">${state.done.includes(id) ? '取消完成标记' : '标记完成'}</button>` : ''}<button class="secondary" id="share">复制分享链接</button></div>`
   document.querySelector('#share').onclick = async () => { try { await navigator.clipboard.writeText(new URL(`#${kind}/${encodeURIComponent(id)}`, location.href).href); toast('分享链接已复制。') } catch { toast('请从浏览器地址栏复制当前链接。') } }
   const done = document.querySelector('#detail-done'); if (done) done.onclick = () => { toggleDone(id); done.textContent = state.done.includes(id) ? '取消完成标记' : '标记完成' }
@@ -104,7 +102,13 @@ function renderAdmin() {
 function editor(kind, item = {}) {
   const section = document.querySelector('#editor')
   section.innerHTML = `<form class="form-panel" id="publish-form"><h2>${item.id ? '编辑' : '发布'}${kinds[kind]}</h2><label for="title">标题 *</label><input id="title" name="title" required maxlength="120" value="${e(item.title || '')}">${kind === 'homeworks' ? `<label for="subject">课程 *</label><input id="subject" name="subject" required maxlength="100" value="${e(item.subject || '')}"><label for="deadline">截止日期 *</label><input id="deadline" type="date" name="deadline" required value="${e(item.deadline || '')}">` : `<label for="category">分类 *</label><select id="category" name="category">${Object.entries(CATEGORIES[kind]).map(([id, label]) => `<option value="${id}" ${item.category === id ? 'selected' : ''}>${label}</option>`).join('')}</select>`}<label>班级范围 *</label><div class="class-checks">${CLASSES.map(([id, label]) => `<label><input type="checkbox" name="classes" value="${id}" ${(item.targetClasses || ['all']).includes(id) ? 'checked' : ''}>${label}</label>`).join('')}</div><label for="description">${kind === 'notices' ? '通知正文' : '说明'}</label><textarea id="description" name="description" maxlength="20000">${e(item.description || item.content || '')}</textarea><label for="attachments">附件（最多 3 个，每个不超过 20 MB）</label><input id="attachments" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.md,.png,.jpg,.jpeg,.webp"><p class="hint">已有附件：${e((item.attachments || []).map(a => a.name).join('、') || '无')}。选择新附件会替换本条内容的附件。</p><p class="hint">附件会公开，请确认有权分享。PDF 可由浏览器打开，Word / PPT 可下载到对应应用查看。</p><label><input type="checkbox" id="reviewed" ${item.status === 'published' ? 'checked' : ''}> 我已检查正文及附件，确认可以公开分享</label><div class="form-actions"><button class="secondary" type="submit" name="action" value="draft">保存草稿</button><button class="primary" type="submit" name="action" value="published">提交发布</button><button class="secondary" type="button" id="cancel-edit">取消</button></div></form>`
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  if (kind === 'materials') {
+    document.querySelector('label[for="category"]').insertAdjacentHTML('beforebegin', `<label for="subject">所属课程</label><select id="subject" name="subject"><option value="">未分类课程</option>${courseOptions([item]).map(subject => `<option value="${e(subject)}" ${normalizeCourse(item.subject) === subject ? 'selected' : ''}>${e(subject)}</option>`).join('')}</select>`)
+  } else if (kind === 'homeworks') {
+    document.querySelector('#subject').setAttribute('list', 'course-options')
+    document.querySelector('#subject').insertAdjacentHTML('afterend', `<datalist id="course-options">${courseOptions([item]).map(subject => `<option value="${e(subject)}"></option>`).join('')}</datalist>`)
+  }
+  section.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   document.querySelector('#cancel-edit').onclick = () => { section.innerHTML = '' }
   document.querySelector('#publish-form').onsubmit = async event => {
     event.preventDefault(); if (state.busy) return
@@ -114,7 +118,7 @@ function editor(kind, item = {}) {
     const attachments = Array.from(document.querySelector('#attachments').files)
     if (attachments.length > 3 || attachments.some(f => f.size > 20 * 1024 * 1024 || !/\.(pdf|docx?|pptx?|md|png|jpe?g|webp)$/i.test(f.name))) { toast('附件格式或大小不符合要求。'); return }
     const record = { ...item, id: item.id || crypto.randomUUID(), title: values.get('title').trim(), description: values.get('description').trim(), targetClasses: selected.includes('all') ? ['all'] : selected, status, updatedAt: new Date().toISOString(), attachments: item.attachments || [] }
-    if (kind === 'homeworks') { record.subject = values.get('subject').trim(); record.deadline = values.get('deadline') } else record.category = values.get('category')
+    if (kind === 'homeworks') { record.subject = normalizeCourse(values.get('subject')); record.deadline = values.get('deadline') } else { record.category = values.get('category'); if (kind === 'materials') record.subject = values.get('subject') }
     try {
       // Read each upload only into memory; never persist credentials or private drafts in storage.
       const uploads = []
@@ -152,8 +156,7 @@ async function load() {
 addEventListener('keydown', event => {
   if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k' || event.altKey || event.isComposing || dialog.open || route() === 'admin') return
   event.preventDefault()
-  if (route() !== 'homeworks') { history.replaceState(null, '', '#homeworks'); state.filter = 'all'; state.query = ''; render() }
   document.querySelector('#search')?.focus()
 })
-addEventListener('hashchange', () => { if (dialog.open) dialog.close(); state.filter = 'all'; state.subject = 'all'; state.query = ''; render() })
+addEventListener('hashchange', () => { if (dialog.open) dialog.close(); state.filter = 'all'; state.subject = 'all'; state.query = ''; state.format = 'all'; state.limit = 24; render() })
 load()
