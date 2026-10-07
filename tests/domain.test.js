@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { visibleItems, deadlineState, safeUrl, escapeHtml, validateContent } from '../domain.js'
+import { CATEGORIES, visibleItems, deadlineState, safeUrl, escapeHtml, validateContent } from '../domain.js'
 import { createPublisher } from '../github.js'
 import { convertExport } from '../scripts/import-cloud-export.js'
 
@@ -20,6 +20,18 @@ test('截止日期按上海自然日计算，截止当天仍有效', () => {
   assert.deepEqual(deadlineState('2026-10-07', now), { days: 0, expired: false, label: '今天截止' })
   assert.equal(deadlineState('2026-10-06', now).expired, true)
   assert.equal(deadlineState('', now).days, null)
+})
+test('作业课程筛选可与截止日期正序、倒序及课程排序组合', () => {
+  const content = { ...data, homeworks: [
+    { ...homework, id: 'late', deadline: '2999-03-01' },
+    { ...homework, id: 'early', deadline: '2999-01-01' },
+    { ...homework, id: 'other', subject: '概率论', deadline: '2999-02-01' }
+  ] }
+  assert.deepEqual(visibleItems(content, 'homeworks').map(i => i.id), ['early', 'other', 'late'])
+  assert.deepEqual(visibleItems(content, 'homeworks', { sort: 'deadline-desc' }).map(i => i.id), ['late', 'other', 'early'])
+  assert.deepEqual(visibleItems(content, 'homeworks', { subject: '数学分析III', sort: 'deadline-desc' }).map(i => i.id), ['late', 'early'])
+  assert.equal(visibleItems(content, 'homeworks', { sort: 'subject' })[0].subject, '概率论')
+  assert.deepEqual(Object.keys(CATEGORIES.notices), ['course', 'exam'])
 })
 test('阻止脚本链接、目录穿越、HTML 注入', () => {
   for (const url of ['javascript:alert(1)', 'data:text/html,test', '//evil.test', 'files/../secret', 'files/a\\b', 'https://user:password@test.com']) assert.equal(safeUrl(url), '')

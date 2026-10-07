@@ -9,7 +9,7 @@ const storage = {
   read(key, fallback) { try { return JSON.parse(localStorage.getItem('xueshiban:' + key)) ?? fallback } catch { return fallback } },
   write(key, value) { try { localStorage.setItem('xueshiban:' + key, JSON.stringify(value)); return true } catch { toast('浏览器未允许保存，本次操作在关闭页面后可能丢失。'); return false } }
 }
-const state = { data: null, classId: storage.read('class', 'all'), done: storage.read('done', []), read: storage.read('read', []), filter: 'all', query: '', error: '', publisher: null, snapshot: null, busy: false }
+const state = { data: null, classId: storage.read('class', 'all'), done: storage.read('done', []), read: storage.read('read', []), filter: 'all', subject: 'all', sort: 'deadline-asc', query: '', error: '', publisher: null, snapshot: null, busy: false }
 if (!CLASSES.some(([id]) => id === state.classId)) state.classId = 'all'
 if (!Array.isArray(state.done)) state.done = []
 if (!Array.isArray(state.read)) state.read = []
@@ -36,8 +36,15 @@ function render() {
     ['全部作业', all.length], ['待完成', all.filter(i => !state.done.includes(i.id) && !deadlineState(i.deadline).expired).length],
     ['已完成', all.filter(i => state.done.includes(i.id)).length], ['紧急', all.filter(i => !state.done.includes(i.id) && deadlineState(i.deadline).days !== null && deadlineState(i.deadline).days >= 0 && deadlineState(i.deadline).days <= 1).length]
   ].map(([label, value]) => `<div class="stat"><span>${label}</span><strong ${label === '紧急' ? 'class="urgent"' : ''}>${value}</strong><small>项</small></div>`).join('')}</div>` : ''
-  app.innerHTML = `<section class="hero"><div><h1>${kind === 'homeworks' ? '今日学事' : kind === 'notices' ? '班级通知' : '资料中心'}</h1><p>${kind === 'homeworks' ? '心中有数，学习有序。' : kind === 'notices' ? '重要的事情，及时知道。' : '课程讲义、复习材料与练习试卷。'}</p></div>${classPicker()}</section>${stats}<div class="toolbar"><div class="filters" aria-label="内容筛选">${Object.entries(options).map(([id, label]) => `<button data-filter="${id}" class="${state.filter === id ? 'active' : ''}" aria-pressed="${state.filter === id}">${label}</button>`).join('')}</div><input class="search" id="search" type="search" placeholder="搜索${kinds[kind]}…" aria-label="搜索${kinds[kind]}" value="${e(state.query)}"></div><section class="list" aria-label="${kinds[kind]}列表">${list.map(item => card(item, kind)).join('') || `<div class="empty"><strong>${state.query || state.filter !== 'all' ? '没有找到匹配内容' : `当前没有${kinds[kind]}`}</strong><p>${state.query || state.filter !== 'all' ? '试试其他关键词或筛选条件。' : '发布后，内容会出现在这里。'}</p></div>`}</section><p class="inline-meta">${kind === 'homeworks' ? '完成标记保存在当前设备，暂不跨设备同步。' : ''}${state.data.updatedAt ? ` 最近发布：${e(new Date(state.data.updatedAt).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))}` : ''}</p>`
-  document.querySelector('#class-picker').onchange = event => { state.classId = event.target.value; storage.write('class', state.classId); render() }
+  const subjects = [...new Set(all.map(item => item.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  const homeworkControls = kind === 'homeworks' ? `<div class="homework-controls"><label>课程<select id="subject-filter" aria-label="按课程筛选"><option value="all">全部课程</option>${subjects.map(subject => `<option value="${e(subject)}" ${state.subject === subject ? 'selected' : ''}>${e(subject)}</option>`).join('')}</select></label><label>排序<select id="sort-order" aria-label="作业排序">${[['deadline-asc', '截止日期 · 由近到远'], ['deadline-desc', '截止日期 · 由远到近'], ['subject', '课程名称 · 分组排列']].map(([id, label]) => `<option value="${id}" ${state.sort === id ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div>` : ''
+  const hasFilter = state.query || state.filter !== 'all' || (kind === 'homeworks' && state.subject !== 'all')
+  app.innerHTML = `<section class="hero"><div><h1>${kind === 'homeworks' ? '今日学事' : kind === 'notices' ? '班级通知' : '资料中心'}</h1><p>${kind === 'homeworks' ? '心中有数，学习有序。' : kind === 'notices' ? '重要的事情，及时知道。' : '课程讲义、复习材料与练习试卷。'}</p></div>${classPicker()}</section>${stats}<div class="toolbar"><div class="filters" aria-label="内容筛选">${Object.entries(options).map(([id, label]) => `<button data-filter="${id}" class="${state.filter === id ? 'active' : ''}" aria-pressed="${state.filter === id}">${label}</button>`).join('')}</div><div class="search-wrap"><input class="search" id="search" type="search" placeholder="搜索${kinds[kind]}…" aria-label="搜索${kinds[kind]}" aria-keyshortcuts="Control+K Meta+K" value="${e(state.query)}"><kbd>Ctrl K</kbd></div></div>${homeworkControls}<section class="list" aria-label="${kinds[kind]}列表">${list.map(item => card(item, kind)).join('') || `<div class="empty"><strong>${hasFilter ? '没有找到匹配内容' : `当前没有${kinds[kind]}`}</strong><p>${hasFilter ? '试试其他关键词或筛选条件。' : '发布后，内容会出现在这里。'}</p></div>`}</section><p class="inline-meta">${kind === 'homeworks' ? '完成标记保存在当前设备，暂不跨设备同步。' : ''}${state.data.updatedAt ? ` 最近发布：${e(new Date(state.data.updatedAt).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))}` : ''}</p>`
+  document.querySelector('#class-picker').onchange = event => { state.classId = event.target.value; state.subject = 'all'; storage.write('class', state.classId); render() }
+  if (kind === 'homeworks') {
+    document.querySelector('#subject-filter').onchange = event => { state.subject = event.target.value; render() }
+    document.querySelector('#sort-order').onchange = event => { state.sort = event.target.value; render() }
+  }
   document.querySelectorAll('[data-filter]').forEach(b => { b.onclick = () => { state.filter = b.dataset.filter; render() } })
   document.querySelector('#search').oninput = event => {
     const pos = event.target.selectionStart; state.query = event.target.value; render()
@@ -141,5 +148,11 @@ async function load() {
   } catch (error) { state.error = error.message }
   render()
 }
-addEventListener('hashchange', () => { if (dialog.open) dialog.close(); state.filter = 'all'; state.query = ''; render() })
+addEventListener('keydown', event => {
+  if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k' || event.altKey || event.isComposing || dialog.open || route() === 'admin') return
+  event.preventDefault()
+  if (route() !== 'homeworks') { history.replaceState(null, '', '#homeworks'); state.filter = 'all'; state.query = ''; render() }
+  document.querySelector('#search')?.focus()
+})
+addEventListener('hashchange', () => { if (dialog.open) dialog.close(); state.filter = 'all'; state.subject = 'all'; state.query = ''; render() })
 load()

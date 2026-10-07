@@ -1,6 +1,6 @@
 export const CLASSES = [['all', '全体'], ['class_1', '1班'], ['class_2', '2班'], ['class_3', '3班'], ['class_4', '4班']]
 export const CATEGORIES = {
-  notices: { course: '课程通知', exam: '考试通知', competition: '比赛通知' },
+  notices: { course: '课程通知', exam: '考试通知' },
   materials: { textbook: '课程资料', review: '复习资料', paper: '练习试卷', homeworkSolution: '作业解析', other: '其他' }
 }
 export function escapeHtml(value = '') {
@@ -20,18 +20,24 @@ export function deadlineState(deadline, now = new Date()) {
   const days = Math.round((new Date(deadline + 'T00:00:00+08:00') - today) / 86400000)
   return { days, expired: days < 0, label: days < 0 ? '已截止' : days === 0 ? '今天截止' : days === 1 ? '明天截止' : `还剩 ${days} 天` }
 }
-export function visibleItems(data, kind, { classId = 'all', query = '', filter = 'all', done = [] } = {}) {
+export function visibleItems(data, kind, { classId = 'all', query = '', filter = 'all', done = [], subject = 'all', sort = 'deadline-asc' } = {}) {
   return data[kind].filter(item => {
     if (item.status !== 'published') return false
     if (classId !== 'all' && !item.targetClasses.includes('all') && !item.targetClasses.includes(classId)) return false
     if (query && !`${item.title} ${item.description || item.content || ''} ${item.subject || ''}`.toLowerCase().includes(query.toLowerCase())) return false
     if (kind === 'homeworks') {
+      if (subject !== 'all' && item.subject !== subject) return false
       if (filter === 'pending') return !done.includes(item.id) && !deadlineState(item.deadline).expired
       if (filter === 'done') return done.includes(item.id)
       if (filter === 'expired') return deadlineState(item.deadline).expired
     } else if (filter !== 'all' && item.category !== filter) return false
     return true
-  }).sort((a, b) => kind === 'homeworks' ? (a.deadline || '9999').localeCompare(b.deadline || '9999') : (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+  }).sort((a, b) => {
+    if (kind !== 'homeworks') return (b.updatedAt || '').localeCompare(a.updatedAt || '')
+    if (sort === 'subject') return a.subject.localeCompare(b.subject, 'zh-CN') || (a.deadline || '9999').localeCompare(b.deadline || '9999')
+    const order = (a.deadline || '9999').localeCompare(b.deadline || '9999')
+    return sort === 'deadline-desc' ? -order : order
+  })
 }
 export function validateContent(data) {
   if (!data || data.schemaVersion !== 1) throw new Error('内容文件版本不受支持。')
