@@ -1,5 +1,5 @@
-import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, visibleItems, validateContent } from './domain.js'
-import { createPublisher } from './github.js'
+import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, visibleItems, validateContent } from './domain.js?v=20261007-2'
+import { createPublisher } from './github.js?v=20261007-2'
 import { REPOSITORY } from './config.js'
 
 const app = document.querySelector('#app')
