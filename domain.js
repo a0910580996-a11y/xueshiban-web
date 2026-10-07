@@ -1,4 +1,4 @@
-import { CURRENT_COURSES, normalizeCourse } from './courses.js?v=20261007-4'
+import { courseRank, normalizeCourse } from './courses.js?v=20261007-9'
 export const CLASSES = [['all', '全体'], ['class_1', '1班'], ['class_2', '2班'], ['class_3', '3班'], ['class_4', '4班']]
 export const SUBMISSION_PLATFORMS = {
   none: { label: '无需在线跳转', url: '' },
@@ -27,6 +27,43 @@ export function deadlineState(deadline, now = new Date()) {
   const days = Math.round((new Date(deadline + 'T00:00:00+08:00') - today) / 86400000)
   return { days, expired: days < 0, label: days < 0 ? '已截止' : days === 0 ? '今天截止' : days === 1 ? '明天截止' : `还剩 ${days} 天` }
 }
+const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
+export function shanghaiDate(now = new Date()) { return now.toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' }) }
+export function formatDate(value, { weekday = false, now = new Date() } = {}) {
+  let ymd = ''
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value || '')) ymd = value
+  else if (typeof value === 'string' && value && !Number.isNaN(Date.parse(value))) ymd = shanghaiDate(new Date(value))
+  if (!ymd) return ''
+  const [y, m, d] = ymd.split('-').map(Number)
+  const year = y === Number(shanghaiDate(now).slice(0, 4)) ? '' : `${y}年`
+  return `${year}${m}月${d}日${weekday ? ` 周${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]}` : ''}`
+}
+export function fileExtension(name = '') { const match = /\.([a-z0-9]{1,6})$/i.exec(name); return match ? match[1].toLowerCase() : '' }
+
+export const DUE_GROUPS = { today: '今天截止', tomorrow: '明天截止', week: '7 天内截止', later: '7 天后截止', expired: '已截止', done: '已完成' }
+export function dueGroup(item, done = [], now = new Date()) {
+  if (done.includes(item.id)) return 'done'
+  const { days } = deadlineState(item.deadline, now)
+  if (days === null || days > 7) return 'later'
+  return days < 0 ? 'expired' : days === 0 ? 'today' : days === 1 ? 'tomorrow' : 'week'
+}
+export function groupBy(items, keyOf, labelOf = key => key) {
+  const groups = new Map()
+  for (const item of items) {
+    const key = keyOf(item)
+    if (!groups.has(key)) groups.set(key, { key, label: labelOf(key), items: [] })
+    groups.get(key).items.push(item)
+  }
+  return [...groups.values()]
+}
+export function groupHomeworks(items, { done = [], sort = 'deadline-asc', now = new Date() } = {}) {
+  if (sort === 'subject') return groupBy(items, item => normalizeCourse(item.subject))
+  const active = ['today', 'tomorrow', 'week', 'later']
+  const order = [...(sort === 'deadline-desc' ? active.reverse() : active), 'expired', 'done']
+  const groups = groupBy(items, item => dueGroup(item, done, now), key => DUE_GROUPS[key])
+  return order.map(key => groups.find(group => group.key === key)).filter(Boolean)
+}
+
 export function visibleItems(data, kind, { classId = 'all', query = '', filter = 'all', done = [], subject = 'all', sort = 'deadline-asc', format = 'all' } = {}) {
   return data[kind].filter(item => {
     if (item.status !== 'published') return false
@@ -43,8 +80,7 @@ export function visibleItems(data, kind, { classId = 'all', query = '', filter =
   }).sort((a, b) => {
     if (kind !== 'homeworks') {
       if (kind === 'materials' && sort !== 'title') {
-        const rank = item => { const index = CURRENT_COURSES.indexOf(normalizeCourse(item.subject)); return index === -1 ? CURRENT_COURSES.length : index }
-        const courseOrder = rank(a) - rank(b)
+        const courseOrder = courseRank(a.subject) - courseRank(b.subject) || normalizeCourse(a.subject).localeCompare(normalizeCourse(b.subject), 'zh-CN')
         if (courseOrder) return courseOrder
       }
       return sort === 'title' ? a.title.localeCompare(b.title, 'zh-CN') : (b.updatedAt || '').localeCompare(a.updatedAt || '') || a.title.localeCompare(b.title, 'zh-CN')

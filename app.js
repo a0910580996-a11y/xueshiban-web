@@ -1,163 +1,315 @@
-import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, validateContent } from './domain.js?v=20261007-6'
-import { createPublisher } from './github.js?v=20261007-4'
-import { studentView, materialCard, submissionLink, submissionSelect } from './student-view.js?v=20261007-6'
-import { courseOptions, normalizeCourse, formatSize } from './courses.js?v=20261007-4'
-import { REPOSITORY } from './config.js'
+import { CLASSES, escapeHtml as e, validateContent } from './domain.js?v=20261007-9'
+import { SECTIONS, studentView, regions, detailView, navCounts, errorView } from './student-view.js?v=20261007-9'
+import { icon } from './icons.js?v=20261007-9'
+import { renderAdmin } from './admin.js?v=20261007-9'
 
 const app = document.querySelector('#app')
 const dialog = document.querySelector('#detail')
-const kinds = { homeworks: '作业', notices: '通知', materials: '资料' }
+const sheet = document.querySelector('#detail-content')
+const toastEl = document.querySelector('#toast')
+const statusEl = document.querySelector('#results-status')
+const classSelect = document.querySelector('#class-switch')
+const themeButton = document.querySelector('#theme-toggle')
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
+const coarsePointer = matchMedia('(pointer: coarse)')
+const PAGE = 24
+const FILTERS = { filter: 'all', subject: 'all', format: 'all', query: '', limit: PAGE }
+const THEMES = { auto: ['跟随系统', 'auto'], light: ['浅色', 'sun'], dark: ['深色', 'moon'] }
+
 const storage = {
   read(key, fallback) { try { return JSON.parse(localStorage.getItem('xueshiban:' + key)) ?? fallback } catch { return fallback } },
   write(key, value) { try { localStorage.setItem('xueshiban:' + key, JSON.stringify(value)); return true } catch { toast('浏览器未允许保存，本次操作在关闭页面后可能丢失。'); return false } }
 }
-const state = { data: null, classId: storage.read('class', 'all'), done: storage.read('done', []), read: storage.read('read', []), filter: 'all', subject: 'all', sort: 'deadline-asc', format: 'all', limit: 24, coursesOpen: false, query: '', error: '', publisher: null, snapshot: null, busy: false }
+const state = { data: null, error: '', classId: storage.read('class', 'all'), done: storage.read('done', []), read: storage.read('read', []), sort: 'deadline-asc', ...FILTERS }
 if (!CLASSES.some(([id]) => id === state.classId)) state.classId = 'all'
 if (!Array.isArray(state.done)) state.done = []
 if (!Array.isArray(state.read)) state.read = []
-let toastTimer
-function toast(message) {
-  const el = document.querySelector('#toast')
-  el.textContent = message; el.hidden = false
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true }, 6000)
-}
-function route() { return location.hash.slice(1).split('/')[0] || 'homeworks' }
-function classPicker() { return `<select class="class-select" id="class-picker" aria-label="筛选班级">${CLASSES.map(([id, label]) => `<option value="${id}" ${state.classId === id ? 'selected' : ''}>${label === '全体' ? '全部班级' : label}</option>`).join('')}</select>` }
-function render() {
-  const kind = route()
-  document.body.dataset.section = kinds[kind] ? kind : 'homeworks'
-  document.body.dataset.searching = Boolean(state.query)
-  document.querySelectorAll('nav a').forEach(a => { const active = a.hash === '#' + kind; a.classList.toggle('active', active); if (active) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current') })
-  app.setAttribute('aria-busy', 'false')
-  if (kind === 'admin') return renderAdmin()
-  if (!kinds[kind]) { location.hash = '#homeworks'; return }
-  if (state.error) { app.innerHTML = `<div class="empty"><strong>暂时没能打开内容</strong><p>${e(state.error)}</p><button class="primary" id="retry">重新加载</button></div>`; document.querySelector('#retry').onclick = load; return }
-  if (!state.data) return
-  app.innerHTML = studentView(state.data, state, kind, card, classPicker)
-  document.querySelector('#class-picker').onchange = event => { state.classId = event.target.value; state.limit = 24; storage.write('class', state.classId); render() }
-  const change = (selector, field) => { const element = document.querySelector(selector); if (element) element.onchange = event => { state[field] = event.target.value; state.limit = 24; render() } }
-  change('#subject-filter', 'subject'); change('#sort-order', 'sort'); change('#format-filter', 'format')
-  const reset = () => { state.subject = 'all'; state.filter = 'all'; state.query = ''; state.format = 'all'; state.limit = 24; state.classId = 'all'; storage.write('class', 'all'); render() }
-  document.querySelector('#reset-filters').onclick = reset
-  const emptyReset = document.querySelector('#empty-reset'); if (emptyReset) emptyReset.onclick = reset
-  const more = document.querySelector('#load-more'); if (more) more.onclick = () => { state.limit += 24; render() }
-  const browse = document.querySelector('#toggle-courses'); if (browse) browse.onclick = () => { state.coursesOpen = !state.coursesOpen; render() }
-  document.querySelectorAll('[data-course]').forEach(b => { b.onclick = () => { state.subject = b.dataset.course; state.filter = 'all'; state.query = ''; state.format = 'all'; state.limit = 24; render(); document.querySelector('.control-panel').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }) } })
-  document.querySelectorAll('[data-filter]').forEach(b => { b.onclick = () => { state.filter = b.dataset.filter; state.limit = 24; render() } })
-  document.querySelector('#search').oninput = event => {
-    const pos = event.target.selectionStart; state.query = event.target.value; state.limit = 24; render()
-    const input = document.querySelector('#search'); input.focus(); if (input.type !== 'search') input.setSelectionRange(pos, pos)
-  }
-  document.querySelectorAll('[data-open]').forEach(b => { b.onclick = () => openDetail(b.dataset.open, kind) })
-  document.querySelectorAll('[data-done]').forEach(b => { b.onclick = () => toggleDone(b.dataset.done) })
-  const detailId = location.hash.slice(1).split('/')[1]
-  if (detailId && !dialog.open) openDetail(decodeURIComponent(detailId), kind, false)
-}
-function card(item, kind) {
-  if (kind === 'materials') return materialCard(item)
-  const deadline = deadlineState(item.deadline)
-  const completed = state.done.includes(item.id)
-  const meta = kind === 'homeworks' ? normalizeCourse(item.subject) : CATEGORIES[kind][item.category]
-  return `<article class="entry ${kind === 'homeworks' && completed ? 'done' : ''}"><button class="entry-body" data-open="${e(item.id)}"><div class="entry-meta"><span class="category">${e(meta)}</span><span>${e(kind === 'homeworks' ? item.deadline : (item.updatedAt || '').slice(0, 10))}</span></div><h2>${e(item.title)}</h2><p>${e(item.description || item.content || '打开查看详细内容')}</p></button><div class="entry-foot"><span class="${kind === 'homeworks' && deadline.days !== null && deadline.days >= 0 && deadline.days <= 1 ? 'urgent' : ''}">${kind === 'homeworks' ? e(deadline.label) : kind === 'notices' ? (state.read.includes(item.id) ? '已读' : '未读') : `附件 ${item.attachments.length} 个`}</span>${kind === 'homeworks' ? `<div class="entry-actions">${submissionLink(item.submissionPlatform)}<button data-done="${e(item.id)}" aria-pressed="${completed}">${completed ? '✓ 已完成' : '标记完成'}</button></div>` : `<button data-open="${e(item.id)}">查看${kinds[kind]} →</button>`}</div></article>`
-}
-function toggleDone(id) {
-  state.done = state.done.includes(id) ? state.done.filter(v => v !== id) : [...state.done, id]
-  storage.write('done', state.done); render()
-}
-function openDetail(id, kind, updateHash = true) {
-  const item = state.data[kind]?.find(i => i.id === id && i.status === 'published')
-  if (!item) { toast('该内容不存在或已撤回。'); return }
-  if (kind === 'notices' && !state.read.includes(id)) { state.read.push(id); storage.write('read', state.read) }
-  const files = item.attachments.map(a => { const url = safeUrl(a.url); if (!url) return ''; return `<div class="attachment"><a class="file" href="${e(url)}" target="_blank" rel="noopener noreferrer">${e(a.name)} ↗<small>${e(formatSize(a.size))} · ${/\.pdf$/i.test(a.name) ? '浏览器查看' : '打开或下载'}</small></a>${url.startsWith('files/') ? `<a class="download-link" href="${e(url)}" download="${e(a.name)}">下载文件 ↓</a>` : ''}</div>${/\.(png|jpe?g|webp)$/i.test(a.name) ? `<img class="detail-image" src="${e(url)}" alt="${e(a.name)}" loading="lazy">` : ''}` }).join('')
-  document.querySelector('#detail-content').innerHTML = `<p class="inline-meta">${e(kind === 'homeworks' ? `${item.subject} · ${item.deadline} 截止` : CATEGORIES[kind][item.category])} · ${e(item.targetClasses.map(c => CLASSES.find(([id]) => id === c)?.[1]).join('、'))}</p><h2>${e(item.title)}</h2><div class="content">${e(item.description || item.content || '')}</div><div class="files">${files}</div><div class="form-actions">${kind === 'homeworks' ? `${submissionLink(item.submissionPlatform, true)}<button class="secondary" id="detail-done">${state.done.includes(id) ? '取消完成标记' : '标记完成'}</button>` : ''}<button class="secondary" id="share">复制分享链接</button></div>`
-  document.querySelector('#share').onclick = async () => { try { await navigator.clipboard.writeText(new URL(`#${kind}/${encodeURIComponent(id)}`, location.href).href); toast('分享链接已复制。') } catch { toast('请从浏览器地址栏复制当前链接。') } }
-  const done = document.querySelector('#detail-done'); if (done) done.onclick = () => { toggleDone(id); done.textContent = state.done.includes(id) ? '取消完成标记' : '标记完成' }
-  if (updateHash) history.replaceState(null, '', '#' + kind + '/' + encodeURIComponent(id))
-  if (!dialog.open) dialog.showModal()
-}
-document.querySelector('.dialog-close').onclick = () => dialog.close()
-dialog.addEventListener('close', () => { history.replaceState(null, '', '#' + route()); render() })
-dialog.addEventListener('click', event => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close() } })
 
-function renderAdmin() {
-  if (!state.publisher) {
-    app.innerHTML = `<section class="hero"><div><h1>管理员后台</h1><p>发布作业、通知和学习资料。</p></div></section><form id="login" class="form-panel"><p class="notice-info">使用拥有此仓库写入权限的 GitHub 账号授权。授权仅在本次页面会话中使用，刷新或退出后清除。</p><p class="hint">仓库：${e(REPOSITORY.owner + '/' + REPOSITORY.name)}。在 GitHub 创建仅限此仓库、Contents 读写权限的 Fine-grained token，然后粘贴到下方。请勿使用账号密码。</p><a class="file" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">前往 GitHub 创建仓库授权 ↗</a><label for="token">仓库授权</label><input id="token" name="token" type="password" autocomplete="off" required><div class="form-actions"><button class="primary" ${state.busy ? 'disabled' : ''}>${state.busy ? '正在连接…' : '连接发布后台'}</button></div><p class="hint">同学无需登录。仓库中的内容和附件公开可读，请勿上传学生个人信息或私密材料。</p></form>`
-    document.querySelector('#login').onsubmit = async event => {
-      event.preventDefault(); if (state.busy) return
-      const token = new FormData(event.target).get('token').trim()
-      document.querySelector('#token').value = ''; state.busy = true
-      const publisher = createPublisher(token); renderAdmin()
-      try { const snapshot = await publisher.load(); state.publisher = publisher; state.snapshot = snapshot; state.data = snapshot.data; state.busy = false; renderAdmin() } catch (error) { state.busy = false; toast(error.message); renderAdmin() }
-    }
+let section = null
+let openId = ''
+let pushedDetail = false
+let closingFromHistory = false
+let returnFocusKey = null
+let refreshTimer
+let toastTimer
+
+const keyOf = el => el?.dataset?.action ? `${el.dataset.action}|${el.dataset.value ?? ''}|${el.dataset.id ?? ''}` : null
+const focusByKey = (root, key) => { if (key) [...root.querySelectorAll('[data-action]')].find(el => keyOf(el) === key)?.focus({ preventScroll: true }) }
+const findItem = id => state.data?.[section]?.find(item => item.id === id && item.status === 'published')
+const searchInput = () => app.querySelector('#search')
+
+function parseHash() {
+  const [name, raw] = location.hash.slice(1).split('/')
+  let id = ''
+  try { id = raw ? decodeURIComponent(raw) : '' } catch { id = '' }
+  return { name: name || 'homeworks', id }
+}
+
+function route() {
+  const { name, id } = parseHash()
+  if (name === 'admin') {
+    if (dialog.open) closeDetail(true)
+    section = 'admin'; setChrome()
+    renderAdmin({ root: app, state, toast, reload: load })
     return
   }
-  app.innerHTML = `<section class="hero"><div><h1>内容管理</h1><p>保存草稿、发布内容，或撤回已发布内容。</p></div><button class="secondary" id="logout">退出授权</button></section><div class="admin-toolbar">${Object.entries(kinds).map(([kind, label]) => `<button class="secondary" data-create="${kind}">＋ 发布${label}</button>`).join('')}<button class="secondary" id="refresh-admin">刷新内容</button><button class="secondary" id="export">备份内容</button></div><p class="notice-info">提交后需等待网站部署。草稿和附件也存储在公开仓库，请勿保存私密内容。撤回只隐藏网站列表，历史版本和旧附件链接仍保留。</p><div id="editor"></div><section class="form-panel">${Object.entries(kinds).map(([kind, label]) => `<h2>${label}</h2>${state.data[kind].map(item => `<div class="manage-row"><span>${e(item.title)}<br><small class="inline-meta">${item.status === 'published' ? '已发布' : item.status === 'draft' ? '草稿' : '已撤回'}</small></span><button data-edit="${e(item.id)}" data-kind="${kind}">编辑</button>${item.status === 'published' ? `<button data-withdraw="${e(item.id)}" data-kind="${kind}">撤回</button>` : ''}</div>`).join('') || '<p class="hint">暂无内容</p>'}`).join('')}</section>`
-  document.querySelector('#logout').onclick = () => { state.publisher = null; state.snapshot = null; renderAdmin(); load() }
-  document.querySelector('#refresh-admin').onclick = async () => { try { const snapshot = await state.publisher.load(); state.snapshot = snapshot; state.data = snapshot.data; renderAdmin(); toast('已加载最新仓库内容。') } catch (error) { toast(error.message) } }
-  document.querySelector('#export').onclick = () => { const url = URL.createObjectURL(new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' })); const a = document.createElement('a'); a.href = url; a.download = '学事板内容备份.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) }
-  document.querySelectorAll('[data-create]').forEach(b => { b.onclick = () => editor(b.dataset.create) })
-  document.querySelectorAll('[data-edit]').forEach(b => { b.onclick = () => editor(b.dataset.kind, state.data[b.dataset.kind].find(i => i.id === b.dataset.edit)) })
-  document.querySelectorAll('[data-withdraw]').forEach(b => { b.onclick = async () => { if (!confirm('确认撤回这条内容？同学将无法在网站中查看，历史版本仍保留。')) return; const data = structuredClone(state.data); data[b.dataset.kind].find(i => i.id === b.dataset.withdraw).status = 'withdrawn'; await commit(data, [], b) } })
+  if (!SECTIONS[name]) { history.replaceState(null, '', '#homeworks'); route(); return }
+  if (name !== section) { Object.assign(state, FILTERS); section = name; renderPage(); window.scrollTo(0, 0) }
+  if (id && state.data) { if (!dialog.open || openId !== id) openDetail(id, false) } else if (!id && dialog.open) closeDetail(true)
 }
-function editor(kind, item = {}) {
-  const section = document.querySelector('#editor')
-  section.innerHTML = `<form class="form-panel" id="publish-form"><h2>${item.id ? '编辑' : '发布'}${kinds[kind]}</h2><label for="title">标题 *</label><input id="title" name="title" required maxlength="120" value="${e(item.title || '')}">${kind === 'homeworks' ? `<label for="subject">课程 *</label><input id="subject" name="subject" required maxlength="100" value="${e(item.subject || '')}"><label for="deadline">截止日期 *</label><input id="deadline" type="date" name="deadline" required value="${e(item.deadline || '')}">` : `<label for="category">分类 *</label><select id="category" name="category">${Object.entries(CATEGORIES[kind]).map(([id, label]) => `<option value="${id}" ${item.category === id ? 'selected' : ''}>${label}</option>`).join('')}</select>`}<label>班级范围 *</label><div class="class-checks">${CLASSES.map(([id, label]) => `<label><input type="checkbox" name="classes" value="${id}" ${(item.targetClasses || ['all']).includes(id) ? 'checked' : ''}>${label}</label>`).join('')}</div><label for="description">${kind === 'notices' ? '通知正文' : '说明'}</label><textarea id="description" name="description" maxlength="20000">${e(item.description || item.content || '')}</textarea><label for="attachments">附件（最多 3 个，每个不超过 20 MB）</label><input id="attachments" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.md,.png,.jpg,.jpeg,.webp"><p class="hint">已有附件：${e((item.attachments || []).map(a => a.name).join('、') || '无')}。选择新附件会替换本条内容的附件。</p><p class="hint">附件会公开，请确认有权分享。PDF 可由浏览器打开，Word / PPT 可下载到对应应用查看。</p><label><input type="checkbox" id="reviewed" ${item.status === 'published' ? 'checked' : ''}> 我已检查正文及附件，确认可以公开分享</label><div class="form-actions"><button class="secondary" type="submit" name="action" value="draft">保存草稿</button><button class="primary" type="submit" name="action" value="published">提交发布</button><button class="secondary" type="button" id="cancel-edit">取消</button></div></form>`
-  if (kind === 'materials') {
-    document.querySelector('label[for="category"]').insertAdjacentHTML('beforebegin', `<label for="subject">所属课程</label><select id="subject" name="subject"><option value="">未分类课程</option>${courseOptions([item]).map(subject => `<option value="${e(subject)}" ${normalizeCourse(item.subject) === subject ? 'selected' : ''}>${e(subject)}</option>`).join('')}</select>`)
-  } else if (kind === 'homeworks') {
-    document.querySelector('#deadline').insertAdjacentHTML('afterend', submissionSelect(item.submissionPlatform))
-    document.querySelector('#subject').setAttribute('list', 'course-options')
-    document.querySelector('#subject').insertAdjacentHTML('afterend', `<datalist id="course-options">${courseOptions([item]).map(subject => `<option value="${e(subject)}"></option>`).join('')}</datalist>`)
+
+function setChrome() {
+  document.body.dataset.section = section
+  document.querySelectorAll('[data-nav]').forEach(link => {
+    const active = link.dataset.nav === section
+    link.classList.toggle('is-active', active)
+    if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current')
+  })
+  document.title = section === 'admin' ? '管理 · 学事板' : `${SECTIONS[section].label} · 学事板`
+  updateBadges()
+}
+
+function updateBadges() {
+  const counts = state.data ? navCounts(state.data, state) : {}
+  document.querySelectorAll('[data-badge]').forEach(el => {
+    const count = counts[el.dataset.badge] || 0
+    el.hidden = !count
+    el.innerHTML = `<span class="visually-hidden">${e(el.dataset.badgeLabel || '')}</span>${count > 99 ? '99+' : count}`
+  })
+}
+
+function renderPage() {
+  setChrome()
+  if (state.error) { app.innerHTML = errorView(state.error); app.setAttribute('aria-busy', 'false'); return }
+  if (!state.data) return
+  app.innerHTML = studentView(state.data, state, section)
+  app.setAttribute('aria-busy', 'false')
+  bindSearch()
+}
+
+function refresh() {
+  clearTimeout(refreshTimer)
+  if (!state.data || !SECTIONS[section]) return
+  const focusKey = app.contains(document.activeElement) ? keyOf(document.activeElement) : null
+  const scroll = new Map([...app.querySelectorAll('[data-keep-scroll]')].map(el => [el.dataset.keepScroll, el.scrollLeft]))
+  const parts = regions(state.data, state, section)
+  for (const [name, html] of Object.entries(parts)) { const el = app.querySelector(`[data-region="${name}"]`); if (el) el.innerHTML = html }
+  app.querySelectorAll('[data-keep-scroll]').forEach(el => { if (scroll.has(el.dataset.keepScroll)) el.scrollLeft = scroll.get(el.dataset.keepScroll) })
+  focusByKey(app, focusKey)
+  updateBadges()
+  const heading = app.querySelector('[data-count]')
+  if (heading) statusEl.textContent = `${heading.dataset.count} ${heading.dataset.unit}结果`
+}
+
+function update(patch) { Object.assign(state, patch); refresh() }
+
+function bindSearch() {
+  const input = searchInput()
+  if (!input) return
+  const apply = () => { if (state.query !== input.value) update({ query: input.value, limit: PAGE }) }
+  input.addEventListener('input', event => { if (!event.isComposing) apply() })
+  input.addEventListener('compositionend', apply)
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return
+    if (input.value) { event.preventDefault(); input.value = ''; apply() } else input.blur()
+  })
+}
+
+function resetFilters() {
+  const input = searchInput()
+  if (input) input.value = ''
+  update({ ...FILTERS })
+}
+
+function revealSelectedFacet() {
+  const chip = app.querySelector('.facet[aria-pressed="true"]')
+  const rail = chip?.parentElement
+  if (!rail || rail.scrollWidth <= rail.clientWidth) return
+  rail.scrollTo({ left: chip.offsetLeft - (rail.clientWidth - chip.offsetWidth) / 2, behavior: reducedMotion.matches ? 'auto' : 'smooth' })
+}
+
+function showMore() {
+  const before = app.querySelectorAll('.row').length
+  update({ limit: state.limit + PAGE })
+  app.querySelectorAll('.row')[before]?.querySelector('.row-main')?.focus({ preventScroll: true })
+}
+
+function setClass(id) {
+  state.classId = id
+  classSelect.value = id
+  storage.write('class', id)
+  if (SECTIONS[section]) update({ limit: PAGE }); else updateBadges()
+}
+
+function toggleDone(id, { undo = false } = {}) {
+  const wasDone = state.done.includes(id)
+  state.done = wasDone ? state.done.filter(value => value !== id) : [...state.done, id]
+  storage.write('done', state.done)
+  app.querySelectorAll('.hw-row').forEach(row => {
+    if (row.dataset.id !== id) return
+    row.classList.toggle('is-done', !wasDone)
+    row.querySelector('.check')?.setAttribute('aria-pressed', String(!wasDone))
+  })
+  if (dialog.open && openId === id) renderDetail(true)
+  updateBadges()
+  clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(refresh, reducedMotion.matches ? 0 : 520)
+  if (undo) return
+  const title = findItem(id)?.title || ''
+  toast(wasDone ? `已移回待完成：${title}` : `已完成：${title}`, { label: '撤销', run: () => toggleDone(id, { undo: true }) })
+}
+
+function markAllRead() {
+  const previous = state.read
+  const ids = (state.data.notices || []).filter(item => item.status === 'published').map(item => item.id)
+  state.read = [...new Set([...previous, ...ids])]
+  storage.write('read', state.read)
+  refresh()
+  toast('已全部标为已读', { label: '撤销', run: () => { state.read = previous; storage.write('read', previous); refresh() } })
+}
+
+function renderDetail(keepFocus = false) {
+  const item = findItem(openId)
+  if (!item) return
+  const focusKey = keepFocus && sheet.contains(document.activeElement) ? keyOf(document.activeElement) : null
+  sheet.innerHTML = detailView(item, section, state)
+  focusByKey(sheet, focusKey)
+}
+
+function openDetail(id, push) {
+  const item = findItem(id)
+  if (!item) {
+    toast('该内容不存在或已撤回。')
+    if (!push) history.replaceState(null, '', '#' + section)
+    return
   }
-  section.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
-  document.querySelector('#cancel-edit').onclick = () => { section.innerHTML = '' }
-  document.querySelector('#publish-form').onsubmit = async event => {
-    event.preventDefault(); if (state.busy) return
-    const form = event.target, values = new FormData(form), status = event.submitter?.value || 'draft'
-    if (status === 'published' && !document.querySelector('#reviewed').checked) { toast('请先检查内容并确认可以公开分享。'); return }
-    const selected = values.getAll('classes'); if (!selected.length) { toast('请至少选择一个班级。'); return }
-    const attachments = Array.from(document.querySelector('#attachments').files)
-    if (attachments.length > 3 || attachments.some(f => f.size > 20 * 1024 * 1024 || !/\.(pdf|docx?|pptx?|md|png|jpe?g|webp)$/i.test(f.name))) { toast('附件格式或大小不符合要求。'); return }
-    const record = { ...item, id: item.id || crypto.randomUUID(), title: values.get('title').trim(), description: values.get('description').trim(), targetClasses: selected.includes('all') ? ['all'] : selected, status, updatedAt: new Date().toISOString(), attachments: item.attachments || [] }
-    if (kind === 'homeworks') { record.subject = normalizeCourse(values.get('subject')); record.deadline = values.get('deadline'); record.submissionPlatform = values.get('submissionPlatform') } else { record.category = values.get('category'); if (kind === 'materials') record.subject = values.get('subject') }
-    try {
-      // Read each upload only into memory; never persist credentials or private drafts in storage.
-      const uploads = []
-      if (attachments.length) {
-        record.attachments = []
-        for (const file of attachments) {
-          const path = `files/${crypto.randomUUID()}.${file.name.split('.').pop().toLowerCase()}`
-          const base64 = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(',')[1]); reader.onerror = () => reject(new Error('附件读取失败，请重新选择。')); reader.readAsDataURL(file) })
-          uploads.push({ path, base64 }); record.attachments.push({ name: file.name, url: path, size: file.size })
-        }
-      }
-      const data = structuredClone(state.data), idx = data[kind].findIndex(i => i.id === record.id)
-      if (idx >= 0) data[kind][idx] = record; else data[kind].push(record)
-      await commit(data, uploads, event.submitter)
-    } catch (error) { toast(error.message) }
+  openId = id
+  if (section === 'notices' && !state.read.includes(id)) { state.read = [...state.read, id]; storage.write('read', state.read) }
+  if (!dialog.open) returnFocusKey = keyOf(document.activeElement)
+  renderDetail()
+  if (push) { history.pushState(null, '', `#${section}/${encodeURIComponent(id)}`); pushedDetail = true }
+  if (!dialog.open) { dialog.showModal(); document.documentElement.classList.add('is-locked') }
+  sheet.querySelector('.sheet-body')?.scrollTo(0, 0)
+  sheet.querySelector('[data-action="close"]')?.focus({ preventScroll: true })
+  if (section === 'notices') refresh()
+}
+
+function closeDetail(fromHistory) { closingFromHistory = fromHistory; dialog.close() }
+
+dialog.addEventListener('close', () => {
+  document.documentElement.classList.remove('is-locked')
+  document.body.append(toastEl)
+  openId = ''
+  if (closingFromHistory) closingFromHistory = false
+  else if (pushedDetail) history.back()
+  else history.replaceState(null, '', '#' + section)
+  pushedDetail = false
+  focusByKey(app, returnFocusKey)
+})
+dialog.addEventListener('click', event => {
+  if (event.target !== dialog) return
+  const rect = dialog.getBoundingClientRect()
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close()
+})
+sheet.addEventListener('click', event => {
+  const target = event.target.closest('[data-action]')
+  if (!target) return
+  if (target.dataset.action === 'close') dialog.close()
+  else if (target.dataset.action === 'toggle-done') toggleDone(target.dataset.id)
+  else if (target.dataset.action === 'share') share(target.dataset.id)
+})
+
+async function share(id) {
+  const item = findItem(id)
+  const url = new URL(`#${section}/${encodeURIComponent(id)}`, location.href).href
+  if (navigator.share && coarsePointer.matches) {
+    try { await navigator.share({ title: item?.title, text: `${item?.title || ''} · 学事板`, url }); return } catch (error) { if (error?.name === 'AbortError') return }
   }
+  try { await navigator.clipboard.writeText(url); toast('链接已复制，可以发给同学了。') } catch { toast('请从浏览器地址栏复制当前链接。') }
 }
-async function commit(data, files, button) {
-  if (state.busy) return
-  state.busy = true; if (button) button.disabled = true
-  try {
-    data.updatedAt = new Date().toISOString()
-    const snapshot = await state.publisher.publish(data, state.snapshot, files)
-    state.snapshot = snapshot; state.data = data; renderAdmin(); toast('已提交到 GitHub。网站部署完成后，同学刷新即可看到更新。')
-  } catch (error) { toast(error.message) } finally { state.busy = false; if (button) button.disabled = false }
+
+function toast(message, action) {
+  clearTimeout(toastTimer)
+  ;(dialog.open ? dialog : document.body).append(toastEl)
+  toastEl.innerHTML = `<span class="toast-text">${e(message)}</span>${action ? `<button class="toast-action" type="button">${e(action.label)}</button>` : ''}`
+  if (action) toastEl.querySelector('.toast-action').onclick = () => { toastEl.hidden = true; action.run() }
+  toastEl.hidden = true
+  void toastEl.offsetWidth
+  toastEl.hidden = false
+  toastTimer = setTimeout(() => { toastEl.hidden = true }, action ? 5200 : 3200)
 }
+
+function applyTheme(mode) {
+  const theme = Object.hasOwn(THEMES, mode) ? mode : 'auto'
+  if (theme === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = theme
+  const [label, symbol] = THEMES[theme]
+  themeButton.dataset.mode = theme
+  themeButton.innerHTML = icon(symbol)
+  themeButton.setAttribute('aria-label', `外观：${label}（点击切换）`)
+  themeButton.title = `外观：${label}`
+  document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
+    meta.dataset.base ??= meta.content
+    meta.content = theme === 'auto' ? meta.dataset.base : getComputedStyle(document.documentElement).getPropertyValue('--paper').trim() || meta.dataset.base
+  })
+}
+
+app.addEventListener('click', event => {
+  const target = event.target.closest('[data-action]')
+  if (!target || !app.contains(target)) return
+  const { action, value = '', id = '' } = target.dataset
+  if (action === 'filter') update({ filter: value, limit: PAGE })
+  else if (action === 'subject') { update({ subject: value, limit: PAGE }); revealSelectedFacet() }
+  else if (action === 'reset') resetFilters()
+  else if (action === 'more') showMore()
+  else if (action === 'open') openDetail(id, true)
+  else if (action === 'toggle-done') toggleDone(id)
+  else if (action === 'clear-search') { resetSearch(); searchInput()?.focus() }
+  else if (action === 'all-classes') setClass('all')
+  else if (action === 'mark-all-read') markAllRead()
+  else if (action === 'retry') load()
+})
+app.addEventListener('change', event => {
+  const { action } = event.target.dataset
+  if (action === 'sort') update({ sort: event.target.value, limit: PAGE })
+  else if (action === 'format') update({ format: event.target.value, limit: PAGE })
+})
+function resetSearch() { const input = searchInput(); if (input) input.value = ''; update({ query: '', limit: PAGE }) }
+
+addEventListener('keydown', event => {
+  if (event.isComposing || dialog.open || !SECTIONS[section]) return
+  const active = document.activeElement
+  const typing = active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable)
+  const shortcut = ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k') || (event.key === '/' && !typing && !event.ctrlKey && !event.metaKey && !event.altKey)
+  if (!shortcut) return
+  event.preventDefault()
+  searchInput()?.focus()
+  searchInput()?.select()
+})
+addEventListener('hashchange', route)
+
 async function load() {
+  state.error = ''
   try {
     const response = await fetch('./content.json', { cache: 'no-store' })
     if (!response.ok) throw new Error('内容暂时无法加载，请稍后重试。')
-    state.data = validateContent(await response.json()); state.error = ''
-  } catch (error) { state.error = error.message }
-  render()
+    state.data = validateContent(await response.json())
+  } catch (error) {
+    state.error = error instanceof TypeError ? '网络连接不稳定，内容暂时无法加载。' : error.message
+  }
+  if (section !== 'admin') { section = null; route() }
 }
-addEventListener('keydown', event => {
-  if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k' || event.altKey || event.isComposing || dialog.open || route() === 'admin') return
-  event.preventDefault()
-  document.querySelector('#search')?.focus()
+
+document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon) })
+classSelect.innerHTML = CLASSES.map(([id, label]) => `<option value="${id}">${id === 'all' ? '全部班级' : label}</option>`).join('')
+classSelect.value = state.classId
+classSelect.addEventListener('change', () => setClass(classSelect.value))
+applyTheme(storage.read('theme', 'auto'))
+themeButton.addEventListener('click', () => {
+  const order = Object.keys(THEMES)
+  const next = order[(order.indexOf(themeButton.dataset.mode) + 1) % order.length]
+  storage.write('theme', next)
+  applyTheme(next)
+  toast(`外观：${THEMES[next][0]}`)
 })
-addEventListener('hashchange', () => { if (dialog.open) dialog.close(); state.filter = 'all'; state.subject = 'all'; state.query = ''; state.format = 'all'; state.limit = 24; render() })
+route()
 load()

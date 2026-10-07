@@ -1,0 +1,12 @@
+{
+  "name": "学事板",
+  "short_name": "学事板",
+  "description": "班级作业、课程通知与学习资料，一处查看。",
+  "lang": "zh-CN",
+  "start_url": "./#homeworks",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f9f4e8",
+  "theme_color": "#f9f4e8",
+  "icons": [{ "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

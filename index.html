@@ -3,19 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f8f6ef">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f9f4e8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="学事板：班级作业、课程通知与学习资料，一处查看。">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: blob:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>学事板 · 作业、通知与资料</title>
-  <link rel="stylesheet" href="./styles.css?v=20261007-6">
-  <script type="module" src="./app.js?v=20261007-6"></script>
+  <link rel="icon" href="./assets/favicon.svg?v=20261007-9" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest?v=20261007-9">
+  <link rel="stylesheet" href="./styles.css?v=20261007-9">
+  <script src="./theme.js?v=20261007-9"></script>
+  <script type="module" src="./app.js?v=20261007-9"></script>
 </head>
 <body>
-  <div class="page-background" aria-hidden="true"></div>
-  <header class="topbar"><a class="brand" href="#homeworks"><span class="brand-seal" aria-hidden="true">学</span><span class="brand-title">学事板<small>学习的事，井井有条。</small></span></a><nav aria-label="主导航"><a href="#homeworks">作业</a><a href="#notices">通知</a><a href="#materials">资料库</a></nav><a class="admin-link" href="#admin">管理 ↗</a></header>
-  <main id="app" aria-busy="true"><p class="empty">正在打开学事板…</p></main>
-  <footer class="site-footer">学事板 · 为同学而做<span>少一点寻找，多一点学习。</span></footer>
-  <div id="toast" role="status" aria-live="polite" hidden></div>
-  <dialog id="detail"><div id="detail-content"></div><button class="dialog-close" aria-label="关闭详情">关闭</button></dialog>
+  <a class="skip-link" href="#app">跳到主要内容</a>
+  <header class="app-header">
+    <div class="container app-header-inner">
+      <a class="brand" href="#homeworks" aria-label="学事板，回到作业">
+        <span class="seal" aria-hidden="true">学</span>
+        <span class="wordmark">学事板<small>学习的事，井井有条。</small></span>
+      </a>
+      <nav class="tabs" aria-label="主导航">
+        <a class="tab" href="#homeworks" data-nav="homeworks"><span class="tab-icon" data-icon="homework"></span><span class="tab-label">作业</span><span class="badge" data-badge="homeworks" data-badge-label="待完成" hidden></span></a>
+        <a class="tab" href="#notices" data-nav="notices"><span class="tab-icon" data-icon="notice"></span><span class="tab-label">通知</span><span class="badge" data-badge="notices" data-badge-label="未读" hidden></span></a>
+        <a class="tab" href="#materials" data-nav="materials"><span class="tab-icon" data-icon="library"></span><span class="tab-label">资料库</span></a>
+      </nav>
+      <div class="header-tools">
+        <label class="class-switch">
+          <span class="class-switch-icon" data-icon="users"></span>
+          <select id="class-switch" aria-label="选择班级"><option value="all">全部班级</option></select>
+          <span class="class-switch-chevron" data-icon="chevron-down"></span>
+        </label>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="切换外观"></button>
+      </div>
+    </div>
+  </header>
+  <main id="app" tabindex="-1" aria-busy="true">
+    <div class="skeleton" aria-hidden="true">
+      <div class="container">
+        <div class="sk sk-kicker"></div>
+        <div class="sk sk-title"></div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-search"></div>
+        <div class="sk-rows">
+          <div class="sk-row"><div class="sk sk-dot"></div><div class="sk-row-text"><div class="sk sk-short"></div><div class="sk sk-long"></div></div></div>
+          <div class="sk-row"><div class="sk sk-dot"></div><div class="sk-row-text"><div class="sk sk-short"></div><div class="sk sk-long"></div></div></div>
+          <div class="sk-row"><div class="sk sk-dot"></div><div class="sk-row-text"><div class="sk sk-short"></div><div class="sk sk-long"></div></div></div>
+          <div class="sk-row"><div class="sk sk-dot"></div><div class="sk-row-text"><div class="sk sk-short"></div><div class="sk sk-long"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <p class="visually-hidden">正在打开学事板…</p>
+    <noscript><p class="container noscript">学事板需要启用 JavaScript 才能显示作业、通知和资料。</p></noscript>
+  </main>
+  <footer class="site-footer">
+    <div class="container site-footer-inner">
+      <p>学事板 · 为同学而做<span>少一点寻找，多一点学习。</span></p>
+      <a class="footer-link" href="#admin">管理入口</a>
+    </div>
+  </footer>
+  <p class="visually-hidden" id="results-status" aria-live="polite"></p>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog class="sheet" id="detail" aria-labelledby="detail-title"><div class="sheet-inner" id="detail-content"></div></dialog>
 </body>
 </html>
