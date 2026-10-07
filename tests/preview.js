@@ -16,7 +16,7 @@ createServer(async (req, res) => {
   const path = new URL(req.url, 'http://localhost').pathname
   if (path === '/content.json') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(content)); return }
   if (path === '/files/test.md') { res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('学事板附件访问测试通过。'); return }
-  if (path === '/assets/study-landscape.jpg') { res.setHeader('Content-Type', 'image/jpeg'); res.end(await readFile(root + 'assets/study-landscape.jpg')); return }
+  if (['/assets/study-landscape.jpg', '/assets/notices-background.jpg', '/assets/materials-background.jpg'].includes(path)) { res.setHeader('Content-Type', 'image/jpeg'); res.end(await readFile(root + path.slice(1))); return }
   if (!['/', '/index.html', '/styles.css', '/app.js', '/domain.js', '/github.js', '/config.js'].includes(path)) { res.writeHead(404); res.end(); return }
   try { const name = path === '/' ? 'index.html' : path.slice(1); res.setHeader('Content-Type', name.endsWith('.js') ? 'text/javascript' : name.endsWith('.css') ? 'text/css' : 'text/html'); res.end(await readFile(root + name)) } catch { res.writeHead(404); res.end() }
 }).listen(Number(process.argv[2] || 4174), '127.0.0.1', () => console.log(`本地 QA：http://127.0.0.1:${process.argv[2] || 4174}`))

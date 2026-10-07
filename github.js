@@ -1,5 +1,5 @@
 import { REPOSITORY } from './config.js'
-import { validateContent } from './domain.js?v=20261007-2'
+import { validateContent } from './domain.js?v=20261007-3'
 
 const root = `https://api.github.com/repos/${REPOSITORY.owner}/${REPOSITORY.name}`
 export function createPublisher(token, fetcher = fetch) {
