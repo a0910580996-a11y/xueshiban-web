@@ -1,6 +1,6 @@
-import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, validateContent } from './domain.js?v=20261007-5'
+import { CLASSES, CATEGORIES, escapeHtml as e, safeUrl, deadlineState, validateContent } from './domain.js?v=20261007-6'
 import { createPublisher } from './github.js?v=20261007-4'
-import { studentView, materialCard, submissionLink, submissionSelect } from './student-view.js?v=20261007-5'
+import { studentView, materialCard, submissionLink, submissionSelect } from './student-view.js?v=20261007-6'
 import { courseOptions, normalizeCourse, formatSize } from './courses.js?v=20261007-4'
 import { REPOSITORY } from './config.js'
 

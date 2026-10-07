@@ -8,7 +8,7 @@ const content = item => ({ schemaVersion: 1, homeworks: [item], notices: [], mat
 
 test('旧作业及无需在线提交作业兼容，只接受固定平台标识', () => {
   assert.equal(domain.validateContent(content(homework)).homeworks.length, 1)
-  for (const submissionPlatform of ['none', 'chaoxing', 'ketangpai']) assert.doesNotThrow(() => domain.validateContent(content({ ...homework, submissionPlatform })))
+  for (const submissionPlatform of ['none', 'chaoxing', 'ketangpai', 'notebook']) assert.doesNotThrow(() => domain.validateContent(content({ ...homework, submissionPlatform })))
   for (const submissionPlatform of ['javascript:alert(1)', 'https://example.com', 'constructor', {}, null]) assert.throws(() => domain.validateContent(content({ ...homework, submissionPlatform })), /提交平台/)
 })
 test('提交按钮指向固定 HTTPS 网站，旧作业不生成错误跳转', () => {
@@ -27,5 +27,10 @@ test('发布和编辑只选择平台，已有选择回显，无逐条链接输�
   assert.match(view.submissionSelect(), /value="none" selected/)
   assert.match(view.submissionSelect(), /学习通/)
   assert.match(view.submissionSelect(), /课堂派/)
+  assert.match(view.submissionSelect(), /作业本（线下提交）/)
   assert.doesNotMatch(view.submissionSelect(), /type="url"/)
+})
+test('作业本明确提示线下提交，不生成跳转或自动完成', () => {
+  assert.match(view.submissionLink('notebook'), /作业本.*线下提交/)
+  assert.doesNotMatch(view.submissionLink('notebook'), /href=|<button|data-done/)
 })

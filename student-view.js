@@ -1,5 +1,5 @@
 import { CURRENT_COURSES, OTHER_COURSES, courseOptions, normalizeCourse, formatSize } from './courses.js?v=20261007-4'
-import { CATEGORIES, SUBMISSION_PLATFORMS, escapeHtml as e, visibleItems, deadlineState } from './domain.js?v=20261007-5'
+import { CATEGORIES, SUBMISSION_PLATFORMS, escapeHtml as e, visibleItems, deadlineState } from './domain.js?v=20261007-6'
 
 const titles = { homeworks: ['学习有序，心中有数。', '作业与进度', '待办、截止日期和完成记录，在这里一眼看清。'], notices: ['重要的事，不错过。', '课程与考试通知', '把课程安排和考试信息，放在恰好的位置。'], materials: ['让资料，真正用起来。', '课程资料库', '从课程出发，找到讲义、复习重点和历年练习。'] }
 export function studentView(data, state, kind, card, classPicker) {
@@ -30,10 +30,11 @@ export function studentView(data, state, kind, card, classPicker) {
 }
 export function submissionLink(platform, prominent = false) {
   const target = typeof platform === 'string' && Object.hasOwn(SUBMISSION_PLATFORMS, platform) ? SUBMISSION_PLATFORMS[platform] : null
+  if (platform === 'notebook') return '<span class="submission-offline">作业本 · 线下提交</span>'
   return target?.url ? `<a class="${prominent ? 'primary ' : ''}submission-link" href="${target.url}" target="_blank" rel="noopener noreferrer" aria-label="前往${target.label}提交（打开平台网站）">前往提交 · ${target.label} ↗</a>` : ''
 }
 export function submissionSelect(platform = 'none') {
-  return `<label for="submission-platform">提交平台</label><select id="submission-platform" name="submissionPlatform">${Object.entries(SUBMISSION_PLATFORMS).map(([id, target]) => `<option value="${id}" ${platform === id ? 'selected' : ''}>${target.label}</option>`).join('')}</select><p class="hint">只需选择平台，不用填写具体作业链接。同学点击“前往提交”后打开平台网站，登录并选择对应课程、作业。</p>`
+  return `<label for="submission-platform">提交方式</label><select id="submission-platform" name="submissionPlatform">${Object.entries(SUBMISSION_PLATFORMS).map(([id, target]) => `<option value="${id}" ${platform === id ? 'selected' : ''}>${target.label}</option>`).join('')}</select><p class="hint">在线作业只需选择平台，不用填写具体作业链接。作业本显示线下提交提示；提交时间、地点等要求请写在说明中。</p>`
 }
 export function materialCard(item) {
   const file = item.attachments[0]
