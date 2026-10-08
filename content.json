@@ -1,7 +1,22 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-07T03:49:47.328Z",
-  "homeworks": [],
+  "updatedAt": "2026-10-08T03:59:49.346Z",
+  "homeworks": [
+    {
+      "id": "711f845c-29c8-434a-889a-3fcf42d7d146",
+      "title": "实践报告",
+      "description": "",
+      "targetClasses": [
+        "class_3"
+      ],
+      "status": "published",
+      "updatedAt": "2026-10-08T03:59:49.345Z",
+      "attachments": [],
+      "subject": "走在前列的广东实践",
+      "deadline": "2026-10-11",
+      "submissionPlatform": "ketangpai"
+    }
+  ],
   "notices": [],
   "materials": [
     {
