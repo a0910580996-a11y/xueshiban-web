@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T03:59:49.346Z",
+  "updatedAt": "2026-10-08T07:07:09.092Z",
   "homeworks": [
     {
       "id": "711f845c-29c8-434a-889a-3fcf42d7d146",
@@ -15,6 +15,20 @@
       "subject": "走在前列的广东实践",
       "deadline": "2026-10-11",
       "submissionPlatform": "ketangpai"
+    },
+    {
+      "id": "fa16c80c-c4fa-4570-8403-018c94388199",
+      "title": "批改网第一次作文",
+      "description": "免听的同学也要写哦，作文号3433702",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-10-08T07:07:09.091Z",
+      "attachments": [],
+      "subject": "大学英语三",
+      "deadline": "2026-10-10",
+      "submissionPlatform": "none"
     }
   ],
   "notices": [],
