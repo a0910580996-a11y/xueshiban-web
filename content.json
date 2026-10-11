@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-08T07:07:09.092Z",
+  "updatedAt": "2026-10-11T02:42:27.786Z",
   "homeworks": [
     {
       "id": "711f845c-29c8-434a-889a-3fcf42d7d146",
@@ -29,6 +29,20 @@
       "subject": "大学英语三",
       "deadline": "2026-10-10",
       "submissionPlatform": "none"
+    },
+    {
+      "id": "ac69662f-5391-4734-8b7c-4bbc12864863",
+      "title": "第六周 Python 作业",
+      "description": "",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-10-11T02:42:27.785Z",
+      "attachments": [],
+      "subject": "Python语言程序设计",
+      "deadline": "2026-11-14",
+      "submissionPlatform": "chaoxing"
     }
   ],
   "notices": [],
