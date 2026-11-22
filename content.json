@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-22T04:46:02.107Z",
+  "updatedAt": "2026-11-22T05:23:00.261Z",
   "homeworks": [
     {
       "id": "711f845c-29c8-434a-889a-3fcf42d7d146",
@@ -129,7 +129,32 @@
       "submissionPlatform": "chaoxing"
     }
   ],
-  "notices": [],
+  "notices": [
+    {
+      "id": "70d33113-25e2-450d-bb09-c1ec013fc171",
+      "title": "【考试通知】数学分析期中考试",
+      "description": "数学分析将于下周举行期中考试，请同学们做好复习准备。具体时间、地点以任课教师通知为准。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T05:23:00.260Z",
+      "attachments": [],
+      "category": "exam"
+    },
+    {
+      "id": "1d10478a-64bd-40bf-9428-bca28a0326c3",
+      "title": "【课程通知】校运会期间停课",
+      "description": "因学校举办校运会，周五、周六相关课程停课，请同学们以学院及任课教师安排为准。",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T05:23:00.260Z",
+      "attachments": [],
+      "category": "course"
+    }
+  ],
   "materials": [
     {
       "id": "material-e5e8586d7117fbd1",
