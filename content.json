@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T02:42:27.786Z",
+  "updatedAt": "2026-11-22T04:46:02.107Z",
   "homeworks": [
     {
       "id": "711f845c-29c8-434a-889a-3fcf42d7d146",
@@ -42,6 +42,90 @@
       "attachments": [],
       "subject": "Python语言程序设计",
       "deadline": "2026-11-14",
+      "submissionPlatform": "chaoxing"
+    },
+    {
+      "id": "0a0f9453-fef5-4a31-a31c-1b12c732056c",
+      "title": "第10次作业：第二型曲线积分",
+      "description": "",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T04:46:02.107Z",
+      "attachments": [],
+      "subject": "数学分析",
+      "deadline": "2026-11-29",
+      "submissionPlatform": "chaoxing"
+    },
+    {
+      "id": "ea918eda-a144-4ad4-ac5e-6bd3ad0822e6",
+      "title": "第8次作业：含参量反常积分",
+      "description": "",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T04:46:02.107Z",
+      "attachments": [],
+      "subject": "数学分析",
+      "deadline": "2026-11-28",
+      "submissionPlatform": "chaoxing"
+    },
+    {
+      "id": "f40a69bf-7ce6-47d0-be40-fdb637dc2cb1",
+      "title": "4.4节作业",
+      "description": "",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T04:46:02.107Z",
+      "attachments": [],
+      "subject": "概率论与数理统计",
+      "deadline": "2026-11-30",
+      "submissionPlatform": "chaoxing"
+    },
+    {
+      "id": "4971ee73-4eac-402e-ba16-1b696a30a82e",
+      "title": "第六章习题",
+      "description": "",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T04:46:02.107Z",
+      "attachments": [],
+      "subject": "Python语言程序设计",
+      "deadline": "2026-12-19",
+      "submissionPlatform": "chaoxing"
+    },
+    {
+      "id": "6dc9b1ed-e2c6-41d2-8c64-18a2ca328e51",
+      "title": "第六章例题",
+      "description": "",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T04:46:02.107Z",
+      "attachments": [],
+      "subject": "Python语言程序设计",
+      "deadline": "2026-12-12",
+      "submissionPlatform": "chaoxing"
+    },
+    {
+      "id": "fa678467-9d0e-4354-89a9-f9eea3736d61",
+      "title": "模拟课堂教学视频作业",
+      "description": "",
+      "targetClasses": [
+        "all"
+      ],
+      "status": "published",
+      "updatedAt": "2026-11-22T04:46:02.107Z",
+      "attachments": [],
+      "subject": "数学分析三",
+      "deadline": "2027-01-03",
       "submissionPlatform": "chaoxing"
     }
   ],

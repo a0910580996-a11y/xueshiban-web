@@ -1,9 +1,9 @@
-import { courseRank, normalizeCourse } from './courses.js?v=20261007-9'
+import { courseRank, normalizeCourse } from './courses.js?v=20261122-1'
 export const CLASSES = [['all', '全体'], ['class_1', '1班'], ['class_2', '2班'], ['class_3', '3班'], ['class_4', '4班']]
 export const SUBMISSION_PLATFORMS = {
   none: { label: '无需在线跳转', url: '' },
   notebook: { label: '作业本（线下提交）', url: '' },
-  chaoxing: { label: '学习通', url: 'https://i.chaoxing.com/' },
+  chaoxing: { label: '学习通', url: 'https://passport2.chaoxing.com/login' },
   ketangpai: { label: '课堂派', url: 'https://www.ketangpai.com/' }
 }
 export const CATEGORIES = {

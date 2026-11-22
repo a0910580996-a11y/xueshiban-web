@@ -1,10 +1,10 @@
-import { CLASSES, CATEGORIES, escapeHtml as e, formatDate, shanghaiDate } from './domain.js?v=20261007-9'
-import { vaultInfo, saveVault, unlockWithPassword, unlockRemembered, setRemember, forgetDevice, daysLeft, TOKEN_DAYS } from './vault.js?v=20261007-9'
-import { createPublisher } from './github.js?v=20261007-9'
-import { submissionSelect } from './student-view.js?v=20261007-9'
-import { courseOptions, normalizeCourse } from './courses.js?v=20261007-9'
-import { REPOSITORY } from './config.js?v=20261007-9'
-import { icon } from './icons.js?v=20261007-9'
+import { CLASSES, CATEGORIES, escapeHtml as e, formatDate, shanghaiDate } from './domain.js?v=20261122-1'
+import { vaultInfo, saveVault, unlockWithPassword, unlockRemembered, setRemember, forgetDevice, daysLeft, TOKEN_DAYS } from './vault.js?v=20261122-1'
+import { createPublisher } from './github.js?v=20261122-1'
+import { submissionSelect } from './student-view.js?v=20261122-1'
+import { courseOptions, normalizeCourse } from './courses.js?v=20261122-1'
+import { REPOSITORY } from './config.js?v=20261122-1'
+import { icon } from './icons.js?v=20261122-1'
 
 const KINDS = { homeworks: '作业', notices: '通知', materials: '资料' }
 const STATUS = { published: '已发布', draft: '草稿', withdrawn: '已撤回' }
