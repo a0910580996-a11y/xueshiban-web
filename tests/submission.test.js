@@ -16,7 +16,7 @@ test('提交按钮指向固定 HTTPS 网站，旧作业不生成错误跳转', (
   assert.equal(view.submissionLink(), '')
   assert.equal(view.submissionLink('none'), '')
   assert.equal(view.submissionLink('constructor'), '')
-  assert.match(view.submissionLink('chaoxing'), /href="https:\/\/i\.chaoxing\.com\/"/)
+  assert.match(view.submissionLink('chaoxing'), /href="https:\/\/passport2\.chaoxing\.com\/login"/)
   assert.match(view.submissionLink('ketangpai'), /href="https:\/\/www\.ketangpai\.com\/"/)
   assert.match(view.submissionLink('chaoxing'), /前往提交/)
   assert.match(view.submissionLink('chaoxing'), /noopener noreferrer/)

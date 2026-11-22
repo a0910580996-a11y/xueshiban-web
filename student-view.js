@@ -1,6 +1,6 @@
-import { CURRENT_COURSES, OTHER_COURSES, normalizeCourse, shortCourse, courseTone, formatSize } from './courses.js?v=20261007-9'
-import { CLASSES, CATEGORIES, SUBMISSION_PLATFORMS, escapeHtml as e, safeUrl, visibleItems, deadlineState, groupHomeworks, groupBy, formatDate, shanghaiDate, fileExtension } from './domain.js?v=20261007-9'
-import { icon } from './icons.js?v=20261007-9'
+import { CURRENT_COURSES, OTHER_COURSES, normalizeCourse, shortCourse, courseTone, formatSize } from './courses.js?v=20261122-1'
+import { CLASSES, CATEGORIES, SUBMISSION_PLATFORMS, escapeHtml as e, safeUrl, visibleItems, deadlineState, groupHomeworks, groupBy, formatDate, shanghaiDate, fileExtension } from './domain.js?v=20261122-1'
+import { icon } from './icons.js?v=20261122-1'
 
 export const SECTIONS = {
   homeworks: { label: '作业', noun: '作业', unit: '项', all: '全部作业', search: '搜索作业、课程或说明' },

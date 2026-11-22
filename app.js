@@ -1,7 +1,7 @@
-import { CLASSES, escapeHtml as e, validateContent } from './domain.js?v=20261007-9'
-import { SECTIONS, studentView, regions, detailView, navCounts, errorView } from './student-view.js?v=20261007-9'
-import { icon } from './icons.js?v=20261007-9'
-import { renderAdmin } from './admin.js?v=20261007-9'
+import { CLASSES, escapeHtml as e, validateContent } from './domain.js?v=20261122-1'
+import { SECTIONS, studentView, regions, detailView, navCounts, errorView } from './student-view.js?v=20261122-1'
+import { icon } from './icons.js?v=20261122-1'
+import { renderAdmin } from './admin.js?v=20261122-1'
 
 const app = document.querySelector('#app')
 const dialog = document.querySelector('#detail')
